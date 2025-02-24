@@ -1,6 +1,6 @@
 <template>
 <!--响应式-->
-<div class="relative flex min-h-screen w-dvw flex-col gap-[1vh] bg-black">
+<div class="relative flex flex-col gap-[1vh] bg-black w-m-screen h-m-screen overflow-hidden">
   <!--电脑端顶部历史对话记录-->
   <div class="hidden h-[7vh] gap-[1vw] bg-white p-[1vh] lg:flex">
     <!--历史对话1(左蓝)-->
