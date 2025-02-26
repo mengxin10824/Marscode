@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import DialogBox from "./src/dialogBox.vue";
-import InputBox from "./src/inputBox.vue";
+import DialogBox from "./src/DialogBox.vue";
+import InputBox from "./src/InputBox.vue";
 </script>
 
 <template>

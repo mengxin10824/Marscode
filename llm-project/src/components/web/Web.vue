@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import dialogBox from "../src/dialogBox.vue";
-import favorite from "./components/favorite.vue";
-import history from "./components/history.vue";
-import inputBox from "../src/inputBox.vue";
+import DialogBox from "../src/DialogBox.vue";
+import Favorite from "./components/History.vue";
+import History from "./components/Favorite.vue";
+import InputBox from "../src/InputBox.vue";
 </script>
 
 <template>
@@ -87,17 +87,17 @@ import inputBox from "../src/inputBox.vue";
 
       <!-- Chat -->
       <div class="grow w-full text-white md:px-14">
-        <dialogBox />
+        <DialogBox />
       </div>
     </div>
 
     <!-- Input Box -->
     <div class="relative min-h-40">
-      <inputBox />
+      <InputBox />
     </div>
 
-    <favorite />
-    <history />
+    <Favorite />
+    <History />
   </div>
 </template>
 

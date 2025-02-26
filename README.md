@@ -1,7 +1,9 @@
 # marscode
 Marscode LLM 前段组件库
 
-
+# Run
+cd llm-project
+npm run dev
 
 > 豆包MarsCode 青训营-寒假专场：https://juejin.cn/post/7437020309973155849
 
