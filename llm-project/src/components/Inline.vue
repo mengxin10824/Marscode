@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import DialogBox from "./src/DialogBox.vue";
 import InputBox from "./src/InputBox.vue";
+
+import { ref } from "vue";
+let inputContent = ref("");
 </script>
 
 <template>
@@ -71,6 +74,8 @@ import InputBox from "./src/InputBox.vue";
       <DialogBox />
     </div>
 
-    <InputBox />
+    <InputBox 
+      :input-content="inputContent"
+    />
   </div>
 </template>

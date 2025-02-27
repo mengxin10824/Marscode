@@ -1,9 +1,13 @@
+<script lang="ts" setup>
+defineEmits(["close"]);
+</script>
+
 <template>
   <div
     class="absolute left-0 w-full pr-5 h-dvh flex flex-col gap-2 p-4 rounded-2xl bg-[#333333] -ml-2 max-w-2xs justify-start"
   >
     <div class="flex flex-col gap-5 p-5">
-      <div class="p-1 bg-white text-black rounded-2xl text-sm w-fit">
+      <div class="p-1 bg-white text-black rounded-2xl text-sm w-fit" @click="$emit('close')">
         &leftarrow; 收起
       </div>
 
