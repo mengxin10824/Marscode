@@ -1,11 +1,59 @@
+<script lang="ts" setup>
+import ModelSetting from "./ModelSetting.vue";
+
+import { defineProps, defineEmits, ref } from "vue";
+let props = defineProps({
+  inputContent: {
+    // 输入框内容
+    type: String,
+    required: true,
+    default: "",
+  },
+  isToolBar: {
+    // 是否显示工具栏
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  allowAttach: {
+    // 是否允许上传附件
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  acceptAttachString: {
+    // 允许上传的附件类型，默认允许上传图片
+    type: String,
+    required: false,
+    default: "image/png, image/jpeg, image/jpg",
+  },
+});
+
+defineEmits([
+  "send",  // 按下发送按钮
+  "attach", // 按下上传附件按钮
+  
+  // "prompt", // 提示词按钮
+  // "safetyMode", // 安全模式
+  // "modelSwitch", // 模型切换  
+  // "modelSetting", // 按下参数设置按钮
+]);
+
+let prompt = ref(false);
+let safetyMode = ref(false);
+let modelSwitch = ref(false);
+let modelSetting = ref(false);
+</script>
+
 <template>
   <!-- Input Box -->
   <div class="w-full flex flex-col gap-2 p-2">
     <!-- Quick Menu -->
-    <div class="w-full flex item-center justify-start gap-2">
+    <div class="w-full flex item-center justify-start gap-2" v-if="props.isToolBar">
       <!-- Command -->
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+        @click="prompt = !prompt"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -26,9 +74,10 @@
           >提示词</span
         >
       </div>
-      <!-- Command -->
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+        @click="safetyMode = !safetyMode"
+        :class="{ 'bg-blue-300': safetyMode }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -49,6 +98,7 @@
       <!-- Command -->
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+        @click="modelSwitch = !modelSwitch"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -69,6 +119,7 @@
       <!-- Command -->
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+        @click="modelSetting = !modelSetting"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -93,8 +144,7 @@
     >
       <!-- Textarea -->
       <textarea
-        name=""
-        id=""
+        v-model="props.inputContent"
         class="h-full w-full p-2 outline-0 resize-none no-scrollbar"
         placeholder="Type your message here..."
       ></textarea>
@@ -102,20 +152,31 @@
         class="absolute bottom-4 right-4 flex items-center gap-4 no-scrollbar"
       >
         <!-- Attach Button -->
-        <button>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="gray"
-              d="M10.62 3.492a4.89 4.89 0 0 1 1.588-1.098 4.85 4.85 0 0 1 5.376 1.054c.458.463.82 1.013 1.067 1.619a4.99 4.99 0 0 1-.025 3.813 4.946 4.946 0 0 1-1.087 1.604l-7.611 7.691a2.935 2.935 0 0 1-2.08.886 2.91 2.91 0 0 1-2.09-.868 2.969 2.969 0 0 1-.86-2.11 2.992 2.992 0 0 1 .877-2.102l7.613-7.691 1.384 1.398-7.613 7.69a.989.989 0 0 0-.298.703.998.998 0 0 0 .286.708.977.977 0 0 0 1.078.21.98.98 0 0 0 .318-.222l7.613-7.69a2.97 2.97 0 0 0 .86-2.099 2.995 2.995 0 0 0-.86-2.097 2.933 2.933 0 0 0-2.076-.87 2.91 2.91 0 0 0-2.076.87l-7.612 7.691a4.972 4.972 0 0 0-1.374 3.478 4.97 4.97 0 0 0 1.433 3.453 4.869 4.869 0 0 0 3.418 1.448 4.867 4.867 0 0 0 3.442-1.388l8.305-8.39 1.384 1.4-8.304 8.39A6.816 6.816 0 0 1 7.85 23c-1.817 0-3.56-.73-4.844-2.027A6.958 6.958 0 0 1 1 16.078a6.96 6.96 0 0 1 2.007-4.895l7.613-7.69Z"
-            />
-          </svg>
-        </button>
+        <div class="flex gap-2 relative text-gray-400" v-if="props.allowAttach">
+          <label for="inputAttach" >
+            <span class="text-sm pr-2 align-bottom">上传附件</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+              class="inline-block"
+            >
+              <path
+                fill="currentColor"
+                d="M10.62 3.492a4.89 4.89 0 0 1 1.588-1.098 4.85 4.85 0 0 1 5.376 1.054c.458.463.82 1.013 1.067 1.619a4.99 4.99 0 0 1-.025 3.813 4.946 4.946 0 0 1-1.087 1.604l-7.611 7.691a2.935 2.935 0 0 1-2.08.886 2.91 2.91 0 0 1-2.09-.868 2.969 2.969 0 0 1-.86-2.11 2.992 2.992 0 0 1 .877-2.102l7.613-7.691 1.384 1.398-7.613 7.69a.989.989 0 0 0-.298.703.998.998 0 0 0 .286.708.977.977 0 0 0 1.078.21.98.98 0 0 0 .318-.222l7.613-7.69a2.97 2.97 0 0 0 .86-2.099 2.995 2.995 0 0 0-.86-2.097 2.933 2.933 0 0 0-2.076-.87 2.91 2.91 0 0 0-2.076.87l-7.612 7.691a4.972 4.972 0 0 0-1.374 3.478 4.97 4.97 0 0 0 1.433 3.453 4.869 4.869 0 0 0 3.418 1.448 4.867 4.867 0 0 0 3.442-1.388l8.305-8.39 1.384 1.4-8.304 8.39A6.816 6.816 0 0 1 7.85 23c-1.817 0-3.56-.73-4.844-2.027A6.958 6.958 0 0 1 1 16.078a6.96 6.96 0 0 1 2.007-4.895l7.613-7.69Z"
+              />
+            </svg>
+          </label>
+          <input
+            type="file"
+            name="inputAttach"
+            id="inputAttach"
+            class="hidden"
+            :accept="acceptAttachString"
+          />
+        </div>
 
         <!-- Send Button -->
         <button>
@@ -135,4 +196,10 @@
       </div>
     </div>
   </div>
+
+  <!-- Pop -->
+  <ModelSetting 
+    v-if="modelSetting"
+    @close="modelSetting = !modelSetting"
+  />
 </template>
