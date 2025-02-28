@@ -1,10 +1,15 @@
 <script lang="ts" setup>
 import DialogBox from "../src/DialogBox.vue";
-import Favorite from "./components/History.vue";
-import History from "./components/Favorite.vue";
+import History from "./components/History.vue";
+import Favorite from "./components/Favorite.vue";
 import InputBox from "../src/InputBox.vue";
-</script>
 
+import { ref } from "vue";
+let isShowFavorite = ref(false);
+let isShowHistory = ref(false);
+
+let inputContent = ref("");
+</script>
 <template>
   <div
     class="flex flex-col gap-2 w-full h-dvh overflow-hidden text-white relative"
@@ -13,10 +18,10 @@ import InputBox from "../src/InputBox.vue";
     <div
       class="w-full flex justify-between items-start p-4 md:absolute md:top-15"
     >
-      <div class="p-1 bg-white text-black rounded-2xl text-sm">
-        &leftarrow; 展开
+      <div class="p-1 bg-white text-black rounded-2xl text-sm" @click="isShowHistory = true">
+        &leftarrow; 历史
       </div>
-      <div class="p-1 bg-white text-black rounded-2xl text-sm">
+      <div class="p-1 bg-white text-black rounded-2xl text-sm" @click="isShowFavorite = true">
         收藏 &rightarrow;
       </div>
     </div>
@@ -93,12 +98,22 @@ import InputBox from "../src/InputBox.vue";
 
     <!-- Input Box -->
     <div class="relative min-h-40">
-      <InputBox />
+      <InputBox 
+        :isToolBar="true"
+        :input-content="inputContent"
+      />
     </div>
 
-    <Favorite />
-    <History />
+    <Favorite
+        v-if="isShowFavorite"
+        @close="isShowFavorite = false"
+    />
+    <History 
+        v-if="isShowHistory"
+        @close="isShowHistory = false"
+    />
   </div>
+
 </template>
 
 <style scoped></style>
