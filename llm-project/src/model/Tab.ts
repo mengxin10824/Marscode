@@ -1,3 +1,6 @@
+import { getNow } from "./Time";
+import { generateUUID } from "./UUID";
+
 // Tab 类型定义
 export class Tab {
     // 标识
@@ -16,11 +19,13 @@ export class Tab {
     // 是否无痕
     isPrivate: boolean = false;
 
-    constructor(id: string, name: string, isActive: boolean, createdTime: string, updatedTime: string) {
+    constructor(id: string = generateUUID(), name: string, isActive: boolean, time: string = getNow()) {
         this.id = id;
         this.name = name;
         this.isActive = isActive;
-        this.createdTime = createdTime;
-        this.updatedTime = updatedTime
+        this.createdTime = time;
+        this.updatedTime = time;
     }
+
+    
 }

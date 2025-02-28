@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import ModelSetting from "./ModelSetting.vue";
+import AllPrompts from "./AllPrompts.vue";
 
 import { defineProps, defineEmits, ref } from "vue";
 let props = defineProps({
@@ -13,7 +14,7 @@ let props = defineProps({
     // 是否显示工具栏
     type: Boolean,
     required: false,
-    default: false,
+    default: true,
   },
   allowAttach: {
     // 是否允许上传附件
@@ -30,12 +31,12 @@ let props = defineProps({
 });
 
 defineEmits([
-  "send",  // 按下发送按钮
+  "send", // 按下发送按钮
   "attach", // 按下上传附件按钮
-  
+
   // "prompt", // 提示词按钮
   // "safetyMode", // 安全模式
-  // "modelSwitch", // 模型切换  
+  // "modelSwitch", // 模型切换
   // "modelSetting", // 按下参数设置按钮
 ]);
 
@@ -49,30 +50,36 @@ let modelSetting = ref(false);
   <!-- Input Box -->
   <div class="w-full flex flex-col gap-2 p-2">
     <!-- Quick Menu -->
-    <div class="w-full flex item-center justify-start gap-2" v-if="props.isToolBar">
+    <div
+      class="w-full flex item-center justify-start gap-2"
+      v-if="props.isToolBar"
+    >
       <!-- Command -->
-      <div
-        class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
-        @click="prompt = !prompt"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-          viewBox="0 0 16 16"
+      <div class="relative">
+        <div
+          class="flex items-center relative w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+          @click="prompt = !prompt"
         >
-          <path
-            stroke="#000"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.333"
-            d="m5 6.667 1.667 1.666L5 10m3 0h2.666M4 3.333h8a1.331 1.331 0 0 1 1.333 1.334v6.666a1.356 1.356 0 0 1-.157.629 1.326 1.326 0 0 1-.79.647 1.322 1.322 0 0 1-.386.058H4a1.326 1.326 0 0 1-1.03-.488 1.34 1.34 0 0 1-.304-.846V4.667A1.333 1.333 0 0 1 4 3.333Z"
-          />
-        </svg>
-        <span class="text-sm font-black hidden md:block text-nowrap"
-          >提示词</span
-        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="none"
+            viewBox="0 0 16 16"
+          >
+            <path
+              stroke="#000"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.333"
+              d="m5 6.667 1.667 1.666L5 10m3 0h2.666M4 3.333h8a1.331 1.331 0 0 1 1.333 1.334v6.666a1.356 1.356 0 0 1-.157.629 1.326 1.326 0 0 1-.79.647 1.322 1.322 0 0 1-.386.058H4a1.326 1.326 0 0 1-1.03-.488 1.34 1.34 0 0 1-.304-.846V4.667A1.333 1.333 0 0 1 4 3.333Z"
+            />
+          </svg>
+          <span class="text-sm font-black hidden md:block text-nowrap">
+            提示词
+          </span>
+        </div>
+        <AllPrompts v-if="prompt" />
       </div>
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
@@ -153,7 +160,7 @@ let modelSetting = ref(false);
       >
         <!-- Attach Button -->
         <div class="flex gap-2 relative text-gray-400" v-if="props.allowAttach">
-          <label for="inputAttach" >
+          <label for="inputAttach">
             <span class="text-sm pr-2 align-bottom">上传附件</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -198,8 +205,5 @@ let modelSetting = ref(false);
   </div>
 
   <!-- Pop -->
-  <ModelSetting 
-    v-if="modelSetting"
-    @close="modelSetting = !modelSetting"
-  />
+  <ModelSetting v-if="modelSetting" @close="modelSetting = !modelSetting" />
 </template>

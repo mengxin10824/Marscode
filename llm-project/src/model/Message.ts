@@ -1,3 +1,4 @@
+import { generateUUID } from "./UUID";
 /**
  * 消息模型 Dialog组件的每条对话的数据结构
  * 
@@ -8,6 +9,7 @@
  * @param sendTime 发送时间
  * 
  */
+
 export enum MessageType {
     USER = 1,
     BOT = 2,
@@ -26,7 +28,7 @@ export class Message {
 
     hasAttachment: boolean = false;
 
-    constructor(id: string, content: string, sender: MessageType, sendTime: string) {
+    constructor(id: string = generateUUID(), content: string, sender: MessageType, sendTime: string) {
         this.id = id;
         this.content = content;
         this.sender = sender;

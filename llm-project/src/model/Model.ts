@@ -1,3 +1,4 @@
+import { generateUUID } from "./UUID";
 /**
  * 模型 ModelSwitch 中每个模型
  * 
@@ -23,7 +24,7 @@ export class Model {
      */
     apiKey: string;
 
-    constructor(id: string, name: string, img: string, url: string, apiKey: string) {
+    constructor(id: string = generateUUID(), name: string, img: string, url: string, apiKey: string) {
         this.id = id;
         this.name = name;
         this.img = img;
