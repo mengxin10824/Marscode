@@ -1,5 +1,29 @@
 <script lang="ts" setup>
-defineEmits(["close"]);
+import { ref } from "vue";
+import SingleHistory from "./SingleHistory.vue";
+import { Tab } from "../../../model/Tab";
+
+const isEditing = ref(false);
+
+let emits = defineEmits([
+  "close",
+  "addNewTab"
+]);
+let props = defineProps({
+  histories: {
+    type: Array<Tab>,
+    require: true,
+    default: [],
+  }
+});
+
+const handleDelete = (id: string) => {
+  const index = props.histories.findIndex(tab => tab.id === id);
+  
+  if (index !== -1) {
+    props.histories.splice(index, 1);
+  }
+};
 </script>
 
 <template>
@@ -7,10 +31,12 @@ defineEmits(["close"]);
     class="absolute left-0 w-full pr-5 h-dvh flex flex-col gap-2 p-4 rounded-2xl bg-[#333333] -ml-2 max-w-2xs justify-start"
   >
     <div class="flex flex-col gap-5 p-5">
-      <div class="p-1 bg-white text-black rounded-2xl text-sm w-fit" @click="$emit('close')">
+      <div
+        class="p-1 bg-white text-black rounded-2xl text-sm w-fit"
+        @click="$emit('close')"
+      >
         &leftarrow; 收起
       </div>
-
       <img
         src=""
         alt=""
@@ -18,14 +44,15 @@ defineEmits(["close"]);
       />
     </div>
 
+    <!-- 历史记录列表 -->
     <div
       class="flex flex-col mx-2 gap-2 border-2 border-white rounded-2xl bg-gray-800 text-sm font-black text-black overflow-hidden grow"
     >
-      <!-- Toolbar -->
       <div class="p-2 w-full flex justify-between items-center bg-white">
         <span>所有历史</span>
-
+        <!-- 添加按钮 -->
         <svg
+          @click="$emit('addNewTab')"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -36,54 +63,23 @@ defineEmits(["close"]);
         </svg>
       </div>
 
-      <!-- 历史记录 -->
       <div class="flex flex-col gap-4 items-center justify-start p-4">
-        <!-- 选中对话 -->
-        <div
-          class="p-2 text-black rounded-xl text-sm w-full flex justify-between items-center hover:bg-blue-300 shadow-2xl bg-blue-200"
-        >
-          <span>历史对话1</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="#000"
-              d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-4.5 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"
-            />
-          </svg>
-        </div>
-
-        <div
-          class="p-2 text-black rounded-xl text-sm w-full flex justify-between items-center hover:bg-blue-300 shadow-2xl bg-white"
-        >
-          <span>历史对话1</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="#000"
-              d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-4.5 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"
-            />
-          </svg>
-        </div>
+        <SingleHistory
+          v-for="item in histories"
+          :key="item.id"
+          :history-item="item"
+          :is-editing="isEditing"
+          @delete="handleDelete(item.id)"
+        />
       </div>
     </div>
 
     <div class="flex flex-col gap-4 p-4 items-center">
       <div
-        class="flex items-center p-2 gap-5 w-fit bg-white font-black text-black rounded-xl text-sm hover:bg-blue-300"
+        class="flex items-center p-2 gap-5 w-fit bg-white font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
+        @click="isEditing = !isEditing"
       >
-        <span>历史编辑</span>
+        <span>{{ isEditing ? "完成编辑" : "历史编辑" }}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -92,8 +88,8 @@ defineEmits(["close"]);
           viewBox="0 0 16 16"
         >
           <path
-            fill="currentColor"
-            d="M13.3 8.4a.7.7 0 0 1 0-.8l.8-1a.7.7 0 0 0 .1-.8l-1.3-2.3a.7.7 0 0 0-.7-.3l-1.3.2a.7.7 0 0 1-.8-.4l-.4-1.2a.7.7 0 0 0-.6-.5H6.4a.7.7 0 0 0-.6.5L5.4 3a.7.7 0 0 1-.8.4l-1.3-.2a.7.7 0 0 0-.6.3L1.3 5.8a.7.7 0 0 0 .1.8l.8 1a.7.7 0 0 1 0 .8l-.8 1a.7.7 0 0 0 0 .8l1.3 2.3a.7.7 0 0 0 .7.3l1.2-.2a.7.7 0 0 1 .8.4l.4 1.2a.7.7 0 0 0 .7.5H9a.7.7 0 0 0 .7-.5l.4-1.2a.7.7 0 0 1 .7-.4l1.3.2a.7.7 0 0 0 .7-.3l1.3-2.3a.7.7 0 0 0 0-.8l-1-1Zm-1 1 .5.5-.8 1.5-.8-.1a2 2 0 0 0-2.3 1.3l-.3.7H7l-.2-.7a2 2 0 0 0-2.3-1.4l-.8.2-.9-1.5.5-.6a2 2 0 0 0 0-2.6L2.7 6l.9-1.5.8.2a2 2 0 0 0 2.3-1.4l.2-.7h1.7l.3.7a2 2 0 0 0 2.3 1.4l.8-.2.8 1.5-.5.6a2 2 0 0 0 0 2.6Zm-4.5-4a2.7 2.7 0 1 0 0 5.3 2.7 2.7 0 0 0 0-5.4Zm0 4a1.3 1.3 0 1 1 0-2.7 1.3 1.3 0 0 1 0 2.6Z"
+            fill="#000"
+            d="M14.7 13.3v1.4H1.3v-1.4h13.4ZM7 4.5l3 3L5.7 12h-3V9L7 4.5Zm3-2.8 3 3-2.1 2.1-3-3L10 1.7Z"
           />
         </svg>
       </div>

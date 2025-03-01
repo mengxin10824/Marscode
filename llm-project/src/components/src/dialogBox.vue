@@ -6,8 +6,9 @@ import { Model } from "../../model/Model";
 import SingleMessage from "./SingleMessage.vue";
 
 /**
- * @param {Array<Message>} 未排序的 Messages 集合，会根据 sendTime 排序
- * @param {Model} 当前 Model 
+ * @param messages 未排序的 Messages 集合，会根据 sendTime 排序
+ * @param model 当前 Model 
+ * @param userImg 用户显示的头像
  */
 defineProps({
   messages: {
@@ -23,8 +24,6 @@ defineProps({
     required: true,
   },
 });
-
-
 </script>
 
 <template>

@@ -63,7 +63,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="absolute bottom-6/5 left-2 w-64 flex flex-col items-center gap-4 border-2 border-blue-200 bg-gray-800 p-4 text-sm font-medium rounded-2xl text-white">
+  <div class="absolute bottom-6/5 left-2 w-64 flex flex-col items-center gap-4 border-2 border-gray-800 bg-gray-800 p-4 text-sm font-medium rounded-2xl text-white">
     <div 
       v-for="(p, index) in allPrompts" 
       :key="p.id"
@@ -97,12 +97,12 @@ onMounted(() => {
       <input
         v-model="newName"
         placeholder="提示词名称"
-        class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 outline-none"
+        class="w-full p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 outline-none"
       />
       <textarea
         v-model="newContent"
         placeholder="提示词内容"
-        class="w-full p-2 border rounded-lg h-20 focus:outline-none focus:ring-2 focus:ring-blue-200 outline-none"
+        class="w-full p-2 rounded-lg h-20 focus:outline-none focus:ring-2 focus:ring-blue-200 outline-none resize-none no-scrollbar"
       />
       <div class="flex gap-2">
         <button
@@ -122,7 +122,7 @@ onMounted(() => {
 
     <button 
       v-else
-      class="w-full p-2 mt-2 text-white hover:bg-gray-700 rounded-lg border border-blue-200"
+      class="w-full p-2 mt-2 text-white hover:bg-gray-700 rounded-lg border-gray-800"
       @click.stop="showAddForm = true"
     >
       + 添加提示词
