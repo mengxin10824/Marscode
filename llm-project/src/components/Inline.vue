@@ -70,7 +70,7 @@ let inputContent = ref("");
       </svg>
     </div>
 
-    <div class="overflow-y-scroll">
+    <div class="overflow-y-scroll no-scrollbar flex-grow">
       <DialogBox />
     </div>
 

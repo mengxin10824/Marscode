@@ -13,6 +13,7 @@ const frequency_penalty = ref(0.5);
 
 function saveSettings() {
   // Save settings
+  
   emit("close");
 }
 
@@ -39,6 +40,8 @@ let allModels = ref([
     apiKey: "Bearer sk-1234567890",
   },
 ]);
+
+
 </script>
 
 <template>

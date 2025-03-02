@@ -4,13 +4,9 @@ import ModelSwicth from "./ModelSwitch.vue";
 import AllPrompts from "./AllPrompts.vue";
 
 import { defineProps, defineEmits, ref } from "vue";
+import { Message } from "../../model/Message";
+import { Prompt } from "../../model/Prompt";
 let props = defineProps({
-  inputContent: {
-    // 输入框内容
-    type: String,
-    required: true,
-    default: "",
-  },
   isToolBar: {
     // 是否显示工具栏
     type: Boolean,
@@ -31,20 +27,21 @@ let props = defineProps({
   },
 });
 
-defineEmits([
-  "send", // 按下发送按钮
-  "attach", // 按下上传附件按钮
-
-  // "prompt", // 提示词按钮
-  // "safetyMode", // 安全模式
-  // "modelSwitch", // 模型切换
-  // "modelSetting", // 按下参数设置按钮
-]);
+defineEmits<{
+  // 按下发送按钮
+  (event: "sendMessage", content: Message): void;
+}>();
 
 let prompt = ref(false);
 let safetyMode = ref(false);
 let modelSwitch = ref(false);
 let modelSetting = ref(false);
+
+let inputContent = ref("");
+
+function selectPrompt(prompt: Prompt) {
+  inputContent.value = prompt.content + "\n" + inputContent.value;
+}
 </script>
 
 <template>
@@ -80,7 +77,7 @@ let modelSetting = ref(false);
             提示词
           </span>
         </div>
-        <AllPrompts v-if="prompt" />
+        <AllPrompts v-if="prompt" :selectPrompt="selectPrompt" />
       </div>
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
@@ -155,7 +152,7 @@ let modelSetting = ref(false);
     >
       <!-- Textarea -->
       <textarea
-        v-model="props.inputContent"
+        v-model="inputContent"
         class="h-full w-full p-2 outline-0 resize-none no-scrollbar"
         placeholder="Type your message here..."
       ></textarea>

@@ -1,12 +1,15 @@
 <script lang="ts" setup>
-import { onMounted, ref, watch, type Ref } from "vue";
+import { onMounted, ref, type Ref } from "vue";
 import { Prompt } from "../../model/Prompt";
 import { getNow } from "../../model/Time";
 import { generateUUID } from "../../model/UUID";
 
-const emits = defineEmits(['seletePrompt']);
+const emits = defineEmits<{
+  (event: "selectPrompt", prompt: Prompt): void;
+}>();
 
 const allPrompts = ref<Prompt[]>([]);
+
 const prompt: Ref<Prompt | null> = ref(null);
 const showAddForm = ref(false);
 const newName = ref("");
@@ -15,11 +18,14 @@ const hoveredPromptId = ref<string | null>(null);
 
 // 添加新的提示词
 function confirmAdd() {
-  if (newName.value.trim() && newContent.value.trim()) {
+  const trimmedName = newName.value.trim();
+  const trimmedContent = newContent.value.trim();
+  
+  if (trimmedName && trimmedContent) {
     const newPrompt = new Prompt(
       generateUUID(),
-      newName.value,
-      newContent.value,
+      trimmedName,
+      trimmedContent,
       getNow()
     );
     allPrompts.value.push(newPrompt);
@@ -41,23 +47,20 @@ function removePrompt(promptToRemove: Prompt) {
 
 function selectPrompt(selectedPrompt: Prompt) {
   prompt.value = selectedPrompt;
-  emits('seletePrompt', selectedPrompt);
+  emits('selectPrompt', selectedPrompt);
 }
-
-function saveToLocalStorage() {
-  localStorage.setItem("prompts", JSON.stringify(allPrompts.value));
-}
-
-watch(allPrompts, () => {
-  saveToLocalStorage();
-}, { deep: true });
 
 onMounted(() => {
-  const saved = localStorage.getItem("prompts");
-  if (saved) {
-    allPrompts.value = JSON.parse(saved).map((p: any) => 
-      new Prompt(p.id, p.name, p.content, p.createdTime)
-    );
+  try {
+    const saved = localStorage.getItem("prompts");
+    if (saved) {
+      allPrompts.value = JSON.parse(saved).map((p: any) => 
+        new Prompt(p.id, p.name, p.content, p.createdTime)
+      );
+    }
+  } catch (error) {
+    console.error("Failed to load prompts from localStorage:", error);
+    allPrompts.value = [];
   }
 });
 </script>

@@ -1,45 +1,27 @@
 <script lang="ts" setup>
-import { ref } from "vue";
 import { Tab } from "../../../model/Tab";
 
-const tabs = ref<Tab[]>([
-  new Tab(undefined, "New Tab", true, undefined)
-]);
-
-function addNewTab() {
-  const newTab = new Tab(undefined, "New Tab", true, undefined);
-  tabs.value.push(newTab);
-  activateTab(newTab);
-}
-
-function activateTab(selectedTab: Tab) {
-  tabs.value.forEach((tab) => {
-    tab.isActive = tab.id === selectedTab.id;
-  });
-}
-
-function deleteTab(tabToDelete: Tab) {
-  const index = tabs.value.findIndex(tab => tab.id === tabToDelete.id);
-  if (index === -1) return;
-
-  const wasActive = tabToDelete.isActive;
-  tabs.value = tabs.value.filter(tab => tab.id !== tabToDelete.id);
-
-  // 如果删除的是当前激活标签且还有剩余标签
-  if (wasActive && tabs.value.length > 0) {
-    const newIndex = Math.min(index, tabs.value.length - 1);
-    activateTab(tabs.value[newIndex]);
+const props = defineProps({
+  tabs: {
+    type: Array<Tab>,
+    required: true,
   }
-}
+})
+
+defineEmits<{
+  (event: "addTab"): void;
+  (event: "activateTab", tab: Tab): void;
+  (event: "deleteTab", tab: Tab): void;
+}>();
 </script>
 
 <template>
   <div class="w-full bg-white flex justify-items-start gap-2 p-2 text-black overflow-x-scroll no-scrollbar">
     <!-- Tab Items -->
     <div
-      v-for="tab in tabs"
+      v-for="tab in props.tabs"
       :key="tab.id"
-      @click="activateTab(tab)"
+      @click="$emit('activateTab', tab)"
       class="border-2 border-black border-solid py-1 px-2 text-sm w-fit flex items-center gap-2 rounded-2xl hover:bg-blue-300 shadow-2xl cursor-pointer transition-colors"
       :class="{ 'bg-blue-200': tab.isActive }"
     >
@@ -47,7 +29,7 @@ function deleteTab(tabToDelete: Tab) {
       
       <!-- Delete Button -->
       <svg
-        @click.stop="deleteTab(tab)"
+        @click.stop="$emit('deleteTab', tab)"
         xmlns="http://www.w3.org/2000/svg"
         width="18"
         height="18"
@@ -64,7 +46,7 @@ function deleteTab(tabToDelete: Tab) {
     <!-- Add Button -->
     <div
       class="border-2 border-black border-solid py-1 px-2 text-sm w-fit flex items-center gap-2 rounded-2xl hover:bg-blue-300 shadow-2xl cursor-pointer transition-colors"
-      @click="addNewTab"
+      @click="$emit('addTab')"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

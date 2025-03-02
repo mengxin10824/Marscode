@@ -1,14 +1,20 @@
 <script lang="ts" setup>
+import { Message } from '../../../model/Message';
+
 defineProps({
+  favorite: {
+    type: Message,
+    required: true
+  },
   favoriteIndex: {
     type: Number,
     required: true
-  },
-  favoriteContent: {
-    type: String,
-    required: true
   }
 });
+
+defineEmits<{
+  (event: "delete", message: Message): void;
+}>();
 </script>
 <template>
   <div
@@ -22,17 +28,17 @@ defineProps({
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
-        fill="none"
         viewBox="0 0 24 24"
+        @click="$emit('delete', favorite)"
       >
         <path
-          fill="#000"
-          d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-4.5 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"
+          fill="currentColor"
+          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
         />
       </svg>
     </div>
     <div class="p-2 border-t-2 border-black overflow-hidden line-clamp-5">
-      {{ favoriteContent }}
+      {{ favorite.content }}
     </div>
   </div>
 </template>

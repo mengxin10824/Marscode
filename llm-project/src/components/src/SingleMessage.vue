@@ -56,6 +56,17 @@ md.renderer.rules.fence = (tokens, idx) => {
 const renderedContent = computed(() => {
   return md.render(props.message.content);
 });
+
+const copyToClipboard = (text: string) => {
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      console.log("Code copied to clipboard");
+    })
+    .catch((err) => {
+      console.error("Failed to copy code: ", err);
+    });
+};
 </script>
 
 <template>
@@ -79,43 +90,25 @@ const renderedContent = computed(() => {
 
       <!-- Hover-Tool -->
       <div
-        class="absolute bg-gray-700 w-fit top-full mt-1 rounded-2xl py-1 px-2 text-white gap-2 hidden group-hover:flex z-1"
+        class="absolute h-6 bg-gray-700 w-fit top-full mt-1 rounded-2xl py-1 px-2 text-gray-300 gap-2 hidden group-hover:flex z-1"
         :class="message.sender === MessageType.BOT ? '-right-10' : '-left-10'"
       >
         <!-- 删除 -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <path
             fill="currentColor"
             d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12Z"
           />
         </svg>
         <!-- 收藏 -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <path
             fill="currentColor"
             d="M11.172 2a3 3 0 0 1 2.121.879l7.71 7.71a3.41 3.41 0 0 1 0 4.822l-5.592 5.592a3.41 3.41 0 0 1-4.822 0l-7.71-7.71A3 3 0 0 1 2 11.172V6a4 4 0 0 1 4-4h5.172ZM7.5 5.5a2 2 0 0 0-1.995 1.85L5.5 7.5a2 2 0 1 0 2-2Z"
           />
         </svg>
         <!-- 复制 -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" @click="copyToClipboard(props.message.content)">
           <g fill="currentColor">
             <path
               d="M15.2 2h-3.9l-4.2.1c-1.1.2-2 .5-2.8 1.2-.7.8-1 1.7-1.2 2.8L3 10.4v5.8a4 4 0 0 0 2.2 3.4V8c.2-1 .5-1.8 1.2-2.6.8-.7 1.7-1 2.6-1.1l3.3-.1h6.3A3.6 3.6 0 0 0 15.2 2Z"

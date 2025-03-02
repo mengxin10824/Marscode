@@ -1,28 +1,49 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import SingleHistory from "./SingleHistory.vue";
 import { Tab } from "../../../model/Tab";
 
-const isEditing = ref(false);
 
-let emits = defineEmits([
-  "close",
-  "addNewTab"
-]);
-let props = defineProps({
-  histories: {
-    type: Array<Tab>,
-    require: true,
-    default: [],
-  }
+
+const emit = defineEmits<{
+  (event: "close"): void;
+  (event: "newTab", newTab: Tab): void;
+}>();
+
+const isEditing = ref(false);
+const histories = ref<Array<Tab>>([]);
+
+const getHistoriesFromLocalStorage = () => {
+  const storedHistories = localStorage.getItem("histories");
+  return storedHistories ? JSON.parse(storedHistories) : [];
+};
+
+const saveHistoriesToLocalStorage = (histories: Array<Tab>) => {
+  localStorage.setItem("histories", JSON.stringify(histories));
+};
+
+onMounted(() => {
+  histories.value = getHistoriesFromLocalStorage();
 });
 
 const handleDelete = (id: string) => {
-  const index = props.histories.findIndex(tab => tab.id === id);
-  
+  const index = histories.value.findIndex((tab) => tab.id === id);
   if (index !== -1) {
-    props.histories.splice(index, 1);
+    histories.value.splice(index, 1);
+    saveHistoriesToLocalStorage(histories.value);
   }
+};
+
+const switchTab = (tab: Tab) => {
+  tab.updateTime();
+  emit("newTab", tab);
+};
+
+const addNewTab = () => {
+  const newTab = new Tab(undefined, "New Tab", false, undefined);
+  histories.value.push(newTab);
+  switchTab(newTab); 
+  saveHistoriesToLocalStorage(histories.value);
 };
 </script>
 
@@ -52,7 +73,7 @@ const handleDelete = (id: string) => {
         <span>所有历史</span>
         <!-- 添加按钮 -->
         <svg
-          @click="$emit('addNewTab')"
+          @click="addNewTab"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -66,7 +87,7 @@ const handleDelete = (id: string) => {
       <div class="flex flex-col gap-4 items-center justify-start p-4">
         <SingleHistory
           v-for="item in histories"
-          :key="item.id"
+          :key="item.updatedTime"
           :history-item="item"
           :is-editing="isEditing"
           @delete="handleDelete(item.id)"
@@ -76,8 +97,9 @@ const handleDelete = (id: string) => {
 
     <div class="flex flex-col gap-4 p-4 items-center">
       <div
-        class="flex items-center p-2 gap-5 w-fit bg-white font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
+        class="flex items-center p-2 gap-5 w-fit  font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
         @click="isEditing = !isEditing"
+        :class="[isEditing ? 'bg-blue-300' : 'bg-white']"
       >
         <span>{{ isEditing ? "完成编辑" : "历史编辑" }}</span>
         <svg

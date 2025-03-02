@@ -1,14 +1,38 @@
 <script lang="ts" setup>
-import { Message } from '../../../model/Message';
+import { onMounted, ref } from 'vue';
+import { Message, MessageType } from '../../../model/Message';
 import SingleFavorite from './SingleFavorite.vue';
 
-defineEmits(["close"]);
-defineProps({
-  favorites: {
-    type: Array<Message>,
-    required: true
+defineEmits<{
+  (event: 'close'): void;
+}>();
+const favorites = ref<Array<Message>>([
+  new Message(undefined, 'Hello', MessageType.USER, undefined, undefined)
+]);
+
+const getFavoritesFromLocalStorage = () => {
+  const storedFavorites = localStorage.getItem('favorites');
+  return storedFavorites ? JSON.parse(storedFavorites) : [];
+};
+
+const saveFavoritesToLocalStorage = () => {
+  localStorage.setItem('favorites', JSON.stringify(favorites.value));
+};
+
+const handleDelete = (message: Message) => {
+  const index = favorites.value.findIndex((favorite) => favorite.id === message.id);
+  if (index !== -1) {
+    favorites.value.splice(index, 1);
+    saveFavoritesToLocalStorage();
+  }
+};
+
+onMounted(() => {
+  if (favorites.value.length) {
+    favorites.value = getFavoritesFromLocalStorage();
   }
 });
+
 </script>
 
 <template>
@@ -26,15 +50,6 @@ defineProps({
       <!-- Toolbar -->
       <div class="p-2 w-full flex justify-between items-center bg-white">
         <span>所有收藏</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path fill="currentColor" d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2v-6Z" />
-        </svg>
       </div>
       <!-- 收藏记录 -->
       <div class="flex flex-col gap-4 justify-start p-4">
@@ -42,7 +57,8 @@ defineProps({
           v-for="favorite, index in favorites"
           :key="favorite.id"
           :favoriteIndex="index"
-          :favoriteContent="favorite.content"
+          :favorite="favorite"
+          @delete="handleDelete"
         />
       </div>
     </div>
