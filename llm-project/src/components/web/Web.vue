@@ -84,8 +84,13 @@ function deleteTab(tabToDelete: Tab) {
 }
 
 const handleSendMessage = (message: Message) => {
+  tabList.value.push(message);
   saveTab(message);
-  // 其他处理逻辑
+};
+
+const handleReceiveMessage = (message: Message) => {
+  tabList.value.push(message);
+  saveTab(message);
 };
 
 onMounted(() => {
@@ -131,7 +136,11 @@ onMounted(() => {
 
     <!-- Input Box -->
     <div class="relative min-h-40">
-      <InputBox :isToolBar="true" @send="handleSendMessage" />
+      <InputBox
+        :isToolBar="true"
+        @sendMessage="handleSendMessage"
+        @receiveMessage="handleReceiveMessage"
+      />
     </div>
 
     <Favorite v-if="isShowFavorite" @close="isShowFavorite = false" />

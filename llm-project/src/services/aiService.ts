@@ -90,15 +90,14 @@ export const getChatCompletion = async (
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching chat completion:', error);
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new AIError('ABORTED', 'Request was aborted by the user');
         }
-        if (error instanceof Response) {
-            const errorData = await error.json();
-            throw new AIError(errorData.error?.code || 'API_ERROR', errorData.error?.message);
+        if (axios.isAxiosError(error)) {
+            const errorData = error.response?.data as { error?: { message: string } };
+            throw new AIError('API_ERROR', errorData?.error?.message || 'API request failed', error.response?.status);
         }
-        throw error;
+        throw new AIError('NETWORK_ERROR', 'Network error occurred');
     }
 };
 
@@ -120,6 +119,10 @@ export const streamChatCompletion = async (
         })
     });
 
+    if (!response.ok) {
+        throw new AIError('API_ERROR', 'Failed to fetch stream response', response.status);
+    }
+
     if (!response.body) throw new AIError('NO_RESPONSE', 'Empty response body');
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -129,19 +132,18 @@ export const streamChatCompletion = async (
         if (done) break;
         
         const chunk = decoder.decode(value);
-        handleStreamResponse(chunk, onData);
-    }
-}
+        const lines = chunk
+            .split('\n')
+            .filter(line => line.trim() && line.startsWith('data: '));
 
-const handleStreamResponse = (chunk: string, onData: (content: string) => void) => {
-    const lines = chunk.split('\n')
-        .filter(line => line.trim() && line.startsWith('data: '));
-    
-    lines.forEach(line => {
-        const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
-        const content = data.choices[0].delta.content || '';
-        onData(content);
-    });
+        lines.forEach(line => {
+            const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
+            const content = data.choices[0].delta.content || '';
+            onData(content);
+        });
+    }
+
+    console.log("API Response（aiService）:", response);
 }
 
 export const getCurrentModel = () => _currentModel;

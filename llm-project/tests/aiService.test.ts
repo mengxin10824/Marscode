@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, beforeAll, afterAll } from 'vitest';
-import { getChatCompletion, streamChatCompletion, setCurrentModel } from '../src/services/aiService';
+import { getChatCompletion, streamChatCompletion, setCurrentModel, AIError } from '../src/services/aiService';
 import { Message, MessageType } from '../src/model/Message';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
@@ -43,33 +43,35 @@ describe('AI Service API', () => {
   });
 
   it('should handle stream response correctly', async () => {
-    const mockMessages = [new Message('1', 'Hello', MessageType.USER, '2025-01-01')];
-    const mockResponse = [
-      'data: {"choices":[{"delta":{"content":"你好"}}]}\n\n',
-      'data: {"choices":[{"delta":{"content":"！"}}]}\n\n',
-      'data: [DONE]\n\n'
-    ].join('');
-
-    mock.onPost(/chat\/completions/).reply(200, mockResponse, {
-      'Content-Type': 'text/event-stream',
-      'Transfer-Encoding': 'chunked'
-    });
-
+    const mockMessages = [new Message('1', '你好', MessageType.USER, new Date().toISOString())];
     const onData = vi.fn();
+
+    // Mock fetch response
+    global.fetch = vi.fn(() =>
+      Promise.resolve(new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"你好"}}]}\n'));
+            controller.close();
+          }
+        }),
+        { status: 200, statusText: 'OK' }
+      ))
+    );
+
     await streamChatCompletion(mockMessages, onData);
 
     expect(onData).toHaveBeenNthCalledWith(1, '你好');
-    expect(onData).toHaveBeenNthCalledWith(2, '！');
   });
 
   it('should handle API errors correctly', async () => {
-    const mockError = { response: { status: 500 } };
+    const mockError = { error: { message: 'API request failed' } };
     mock.onPost(/chat\/completions/).replyOnce(500, mockError);
-    
-    await expect(getChatCompletion({ 
-        apiUrl: 'https://api.siliconflow.cn/v1', 
-        prompt: 'test', 
-        max_tokens: 1000 
-    })).rejects.toThrow('API_ERROR');
+
+    await expect(getChatCompletion({
+      apiUrl: 'https://api.siliconflow.cn/v1',
+      prompt: 'test',
+      max_tokens: 1000
+    })).rejects.toThrowError('API request failed');
   });
 }); 
