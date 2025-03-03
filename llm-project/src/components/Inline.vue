@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import DialogBox from "./src/dialogBox.vue";
 import InputBox from "./src/inputBox.vue";
+import { Message, MessageType } from "../model/Message";
+import { Model } from "../model/Model";
+const messages = ref<Message[]>([]);
+const model = new Model(
+  undefined,
+  "Bot",
+  "https://example.com/bot-icon.png",
+  "gpt-3.5-turbo",
+  "Bearer sk-1234567890"
+);
+const userImg = "https://example.com/user-icon.png";
 
 import { ref } from "vue";
 let inputContent = ref("");

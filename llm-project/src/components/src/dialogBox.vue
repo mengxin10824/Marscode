@@ -10,6 +10,8 @@ import { generateUUID } from "../../model/UUID";
 import { getNow } from "../../model/Time";
 import type { StreamChunk } from "../../services/aiService";
 
+const tabList = ref<Message[]>([]);
+
 /**
  * @param messages 未排序的 Messages 集合，会根据 sendTime 排序
  * @param model 当前 Model
@@ -34,6 +36,8 @@ const formatContent = (content: string) => {
 const messages = ref<Message[]>([]);
 
 const handleSend = async (content: string) => {
+  if (!content.trim()) return;
+
   const userMsg = new Message(
     generateUUID(), // id
     content, // content
@@ -171,6 +175,34 @@ struct TodoItem: Identifiable {
     var title: String = "Default Event Example for long text todo item efault Event Example for long text todo item efault Event Example for long text todo item efault Event Example for long text todo item" 
     var isCompleted: Bool
 }</code></pre>
+        </div>
+      </div>
+    </div>
+    <div v-for="msg in tabList" :key="msg.id">
+      <div
+        v-if="msg.sender === MessageType.USER"
+        class="h-fit flex flex-row-reverse items-start justify-start gap-2"
+      >
+        <img
+          :src="userImg"
+          alt="User"
+          class="size-10 aspect-square rounded-full bg-amber-50"
+        />
+        <div class="rounded-2xl p-2 max-w-[90%] bg-gray-800">
+          <p class="text-pretty break-words">{{ msg.content }}</p>
+        </div>
+      </div>
+      <div
+        v-if="msg.sender === MessageType.BOT"
+        class="h-fit flex items-start justify-start gap-2"
+      >
+        <img
+          :src="model.icon"
+          alt="AI"
+          class="size-10 aspect-square rounded-full bg-amber-50"
+        />
+        <div class="rounded-2xl bg-gray-800 p-2 max-w-[90%]">
+          <p class="text-pretty break-words">{{ msg.content }}</p>
         </div>
       </div>
     </div>
