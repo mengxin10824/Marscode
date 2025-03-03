@@ -21,7 +21,6 @@ const loadTabs = () => {
 };
 
 const saveTab = (message: Message) => {
-  tabList.value.push(message);
   sessionStorage.setItem("tabs", JSON.stringify(tabList.value));
 };
 
@@ -93,6 +92,13 @@ const handleReceiveMessage = (message: Message) => {
   // saveTab(message);
 };
 
+const updateMessage = (messageId: string, content: string) => {
+  const message = tabList.value.find((msg) => msg.id === messageId);
+  if (message) {
+    message.content += content;
+  }
+};
+
 onMounted(() => {
   loadTabs();
   addNewTab();
@@ -140,6 +146,7 @@ onMounted(() => {
         :isToolBar="true"
         @sendMessage="handleSendMessage"
         @receiveMessage="handleReceiveMessage"
+        @updateMessage="updateMessage"
       />
     </div>
 

@@ -34,6 +34,7 @@ let props = defineProps({
 const emit = defineEmits<{
   (event: "sendMessage", content: Message): void;
   (event: "receiveMessage", content: Message): void;
+  (event: "updateMessage", messageId: string, content: string): void;
 }>();
 
 let prompt = ref(false);
@@ -63,19 +64,24 @@ const handleSend = async () => {
   // 清空输入框
   inputContent.value = "";
 
+
   // 调用 AI 接口
   try {
-    await streamChatCompletion([message], (content) => {
-      console.log("Received AI response:", content);
-      emit(
-        "receiveMessage",
-        new Message(generateUUID(), content, MessageType.BOT, getNow())
-      );
-    });
-    console.log("streamChatCompletion completed.");
-  } catch (error) {
-    console.error("Error sending message:", error);
-  }
+        await streamChatCompletion(
+            [message],
+            (newMessage) => {
+                // 新建消息
+                emit("receiveMessage", newMessage);
+            },
+            (messageId, content) => {
+                // 更新消息内容
+                emit("updateMessage", messageId, content);
+            }
+        );
+        console.log("streamChatCompletion completed.");
+    } catch (error) {
+        console.error("Error sending message:", error);
+    }
 };
 </script>
 
