@@ -64,24 +64,23 @@ const handleSend = async () => {
   // 清空输入框
   inputContent.value = "";
 
-
   // 调用 AI 接口
   try {
-        await streamChatCompletion(
-            [message],
-            (newMessage) => {
-                // 新建消息
-                emit("receiveMessage", newMessage);
-            },
-            (messageId, content) => {
-                // 更新消息内容
-                emit("updateMessage", messageId, content);
-            }
-        );
-        console.log("streamChatCompletion completed.");
-    } catch (error) {
-        console.error("Error sending message:", error);
-    }
+    await streamChatCompletion(
+      [message],
+      (newMessage) => {
+        // 新建消息
+        emit("receiveMessage", newMessage);
+      },
+      (messageId, content) => {
+        // 更新消息内容
+        emit("updateMessage", messageId, content);
+      }
+    );
+    console.log("streamChatCompletion completed.", message);
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
 };
 </script>
 

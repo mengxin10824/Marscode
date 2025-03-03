@@ -141,10 +141,17 @@ export const streamChatCompletion = async (
             .split('\n')
             .filter(line => line.trim() && line.startsWith('data: '));
 
-        lines.forEach(line => {
-            const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
-            const content = data.choices[0].delta.content || '';
+        lines.forEach((line) => {
+            const data = line.replace("data: ", "").trim();
+            if (data === "[DONE]") {
+                return; // 遇到 [DONE] 标志，直接返回
+            }
+            // const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
+            // const content = data.choices[0].delta.content || '';
+            const parsedData = JSON.parse(data) as StreamChunk;
+            const content = parsedData.choices[0].delta.content || "";
 
+    console.log("API Response（aiService）:", content);
             if (!messageId) {
                 const newMessage = new Message(
                     generateUUID(), 
@@ -160,7 +167,6 @@ export const streamChatCompletion = async (
         });
     }
 
-    console.log("API Response（aiService）:", response);
 }
 
 export const getCurrentModel = () => _currentModel;

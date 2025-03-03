@@ -97,16 +97,27 @@ const handleStreamResponse = (chunk: string, onData: (content: string) => void) 
   let combinedContent = ""; // 用于组合分块的 content
 
   lines.forEach((line) => {
+    const data = line.replace("data: ", "").trim();
+    if (data === "[DONE]") {
+      console.log("Stream completed with [DONE] marker."); // 打印流式传输完成标志
+      return; // 遇到 [DONE] 标志，直接返回
+    }
+
     try {
-      const data = JSON.parse(line.replace("data: ", "")) as StreamChunk;
-      const content = data.choices[0].delta.content || "";
+      // const data = JSON.parse(line.replace("data: ", "")) as StreamChunk;
+      // const content = data.choices[0].delta.content || "";
+
+      const parsedData = JSON.parse(data) as StreamChunk;
+      const content = parsedData.choices[0].delta.content || "";
       combinedContent += content; // 将分块的 content 组合起来
+      console.log("Received chunk:", content); // 打印每个分块的内容，用于调试目的
     } catch (error) {
       console.error("Error parsing stream chunk:", error);
     }
   });
 
   onData(combinedContent); // 将组合后的 content 传递给回调函数
+  console.log("Combined content:", combinedContent); // 打印组合后的完整内容，用于调试目的
 };
 
 const activeMessages = computed(() => props.messages);
