@@ -3,7 +3,14 @@
     class="w-full flex flex-col items-stretch gap-8 h-full text-white px-4 py-8"
   >
     <!-- User -->
-    <div class="h-fit flex flex-row-reverse items-start justify-start gap-2">
+    <div :class="[
+      'h-fit',
+      'flex',
+      'flex-row-reverse',
+      'items-start',
+      'justify-start',
+      'gap-2'
+    ]">
       <img
         src=""
         alt=""
@@ -30,7 +37,7 @@
 
         <p class="text-pretty break-words mt-2">
           1.
-          创建项目：打开Xcode，选择“创建新项目”，选择“App”，然后命名您的项目，例如“TodoApp”。
+          创建项目：打开Xcode，选择"创建新项目"，选择"App"，然后命名您的项目，例如"TodoApp"。
         </p>
 
         <p class="text-pretty break-words mt-2">

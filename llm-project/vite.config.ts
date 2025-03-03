@@ -5,7 +5,14 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          // 允许连字符类名
+          whitespace: 'preserve'
+        }
+      }
+    }),
     tailwindcss()
   ],
 })

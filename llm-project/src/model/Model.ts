@@ -8,30 +8,36 @@
  * 
  */
 export class Model {
-    id: string;
+    // id: string;
 
-    name: string;
+    // name: string;
     
-    /**
-     * 模型图片地址，在对话框显示 Icon
-     */
-    img: string;
+    // /**
+    //  * 模型图片地址，在对话框显示 Icon
+    //  */
+    // img: string;
 
-    url: string;
-    /**
-     * 模型API密钥，没有 Bearer 的字符串
-     */
-    apiKey: string;
+    // url: string;
+    // /**
+    //  * 模型API密钥，没有 Bearer 的字符串
+    //  */
+    // apiKey: string;
 
-    constructor(id: string, name: string, img: string, url: string, apiKey: string) {
-        this.id = id;
-        this.name = name;
-        this.img = img;
-        this.url = url;
-        this.apiKey = apiKey;
-    }
+    // constructor(id: string, name: string, img: string, url: string, apiKey: string) {
+    //     this.id = id;
+    //     this.name = name;
+    //     this.img = img;
+    //     this.url = url;
+    //     this.apiKey = apiKey;
+    constructor(
+        public readonly id: string,
+        public name: string,
+        public icon: string,     // 图标路径
+        public url: string,      // API地址
+        public apiKey: string    // 第五个参数
+    ) {}
 
-    getFullKey(): string {
+    public getFullKey(): string {
         return "Bearer " + this.apiKey;
     }
 }
