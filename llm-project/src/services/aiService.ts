@@ -1,7 +1,9 @@
 import axios from 'axios';
 // 在文件顶部添加导入语句
 import { Model } from '../model/Model';
-import { Message } from '../model/Message';
+import { Message, MessageType } from '../model/Message';
+import { generateUUID } from '../model/UUID';
+import { getNow } from '../model/Time';
 
 // 在文件顶部添加变量声明
 let _currentModel: Model;
@@ -103,7 +105,8 @@ export const getChatCompletion = async (
 
 export const streamChatCompletion = async (
     messages: Message[],
-    onData: (content: string) => void
+    onNewMessage: (message: Message) => void, 
+    onUpdateMessage: (messageId: string, content: string) => void 
 ) => {
     const response = await fetch(`${_apiBase}/chat/completions`, {
         method: 'POST',
@@ -112,7 +115,6 @@ export const streamChatCompletion = async (
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            // model: _currentModel.id,
             model: "deepseek-ai/DeepSeek-V3",
             messages: messages.map(m => ({ role: 'user', content: m.content })),
             stream: true,
@@ -127,11 +129,13 @@ export const streamChatCompletion = async (
     if (!response.body) throw new AIError('NO_RESPONSE', 'Empty response body');
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    
+
+    let messageId: string | null = null; 
+
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value);
         const lines = chunk
             .split('\n')
@@ -140,7 +144,19 @@ export const streamChatCompletion = async (
         lines.forEach(line => {
             const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
             const content = data.choices[0].delta.content || '';
-            onData(content);
+
+            if (!messageId) {
+                const newMessage = new Message(
+                    generateUUID(), 
+                    content, 
+                    MessageType.BOT, 
+                    getNow()
+                );
+                messageId = newMessage.id;
+                onNewMessage(newMessage);
+            } else {
+                onUpdateMessage(messageId, content); 
+            }
         });
     }
 
