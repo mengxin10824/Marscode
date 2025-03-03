@@ -66,7 +66,7 @@ function savePromptsToLocalStorage() {
     <div 
       v-for="(p, index) in allPrompts" 
       :key="p.id"
-      class="group relative flex justify-between items-center w-full p-1 hover:bg-gray-700 rounded cursor-pointer"
+      class="group relative flex justify-between items-center w-full p-1 hover:bg-gray-700 rounded cursor-pointer shadow-lg"
       :class="{ 'bg-blue-100': prompt?.id === p.id }"
       @click="selectPrompt(p)"
       @mouseenter="hoveredPromptId = p.id"

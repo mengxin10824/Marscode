@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import { ref, defineEmits } from "vue";
+import { ref, defineEmits, computed } from "vue";
+import { ModelConfig } from "../../model/ModelConfig";
 
 const emit = defineEmits(["close"]);
 
 const systemPrompt = ref("");
-const selectedModel = ref("gpt-3.5-turbo");
 const temperature = ref(0.7);
 const maxTokens = ref(2048);
 const topP = ref(0.7);
 const topK = ref(50);
 const frequency_penalty = ref(0.5);
+
+const modelConfig = computed(() => {
+  return new ModelConfig(
+    systemPrompt.value,
+    temperature.value,
+    maxTokens.value,
+    topP.value,
+    topK.value,
+    frequency_penalty.value
+  );
+});
 
 function saveSettings() {
   // Save settings
@@ -17,31 +28,9 @@ function saveSettings() {
   emit("close");
 }
 
-let allModels = ref([
-  {
-    id: 1,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-  {
-    id: 2,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-  {
-    id: 3,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-]);
-
-
+defineExpose<{
+  modelConfig: ModelConfig;
+}>();
 </script>
 
 <template>
@@ -59,22 +48,6 @@ let allModels = ref([
             class="w-full bg-gray-800 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
           >
           </textarea>
-        </div>
-
-        <div class="mb-4 space-y-1">
-          <label class="block t mb-2">选择模型</label>
-          <select
-            v-model="selectedModel"
-            class="w-full bg-gray-800 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 selection:text-white"
-          >
-            <option
-              v-for="model in allModels"
-              :key="model.id"
-              v-bind:value="model.id"
-            >
-              {{ model.name }}
-            </option>
-          </select>
         </div>
 
         <div class="mb-4">

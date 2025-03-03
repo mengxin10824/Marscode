@@ -59,6 +59,14 @@ function deleteFavorite(favorite: Message) {
   favoriteRef.value?.deleteFavorite(favorite);
 }
 
+function addMessage(message: Message) {
+  tabBarRef.value?.addMessage(message);
+}
+
+function deleteMessage(message: Message) {
+  tabBarRef.value?.deleteMessage(message);
+}
+
 </script>
 <template>
   <div
@@ -92,8 +100,10 @@ function deleteFavorite(favorite: Message) {
       <div class="grow w-full text-white md:px-14">
         <DialogBox
           :messages="tabBarRef?.activedTab?.messages ?? []"
-          :model="inputBoxRef?.selectedModel!"
+          :model="inputBoxRef?.modelSwitchRef?.currentModel!"
           :userImg="userImg"
+          @addToFavorite="addFavorite"
+          @deleteMessage="deleteMessage"
         />
       </div>
     </div>
@@ -103,6 +113,7 @@ function deleteFavorite(favorite: Message) {
       <InputBox
         ref="inputBoxRef"
         :isToolBar="true"
+        @addMessage="addMessage"
       />
     </div>
 
@@ -111,9 +122,11 @@ function deleteFavorite(favorite: Message) {
         @close="isShowHistory = false"
         @addHistory="addHistory"
         @deleteHistory="deleteHistory"
+        @addTab="addTab"
         ref="historyRef"
         :img="userImg"
     />
+
     <Favorite
         v-show="isShowFavorite"
         @close="isShowFavorite = false"
@@ -121,7 +134,5 @@ function deleteFavorite(favorite: Message) {
         @deleteFavorite="deleteFavorite"
         ref="favoriteRef"
     />
-    
   </div>
-
 </template>

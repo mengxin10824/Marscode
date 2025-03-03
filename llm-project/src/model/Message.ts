@@ -28,9 +28,9 @@ export class Message {
     sendTime: string;
     
     // 是否有附件
-    attachMent: Array<File> | null = null;
+    attachMent: FileList | null = null;
 
-    constructor(id: string = generateUUID(), content: string, sender: MessageType, sendTime: string = getNow(), attachMent: Array<File> | null = null) {
+    constructor(id: string = generateUUID(), content: string, sender: MessageType, sendTime: string = getNow(), attachMent: FileList | null = null) {
         this.id = id;
         this.content = content;
         this.sender = sender;

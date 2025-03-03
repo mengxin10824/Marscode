@@ -3,18 +3,21 @@ import ModelSetting from "./ModelSetting.vue";
 import ModelSwicth from "./ModelSwitch.vue";
 import AllPrompts from "./AllPrompts.vue";
 
-import { defineProps, defineEmits, ref } from "vue";
-import { Message } from "../../model/Message";
+import { defineProps, defineEmits, ref, type Ref } from "vue";
+import { Message, MessageType } from "../../model/Message";
 import { Prompt } from "../../model/Prompt";
-import { Model } from "../../model/Model";
+import { ModelConfig } from "../../model/ModelConfig";
+import type { Model } from "../../model/Model";
+
+
 
 let prompt = ref(false);
 let safetyMode = ref(false);
 let modelSwitch = ref(false);
 let modelSetting = ref(false);
 
-let inputContent = ref("");
-let selectedModel = ref<Model | null>(null);
+let modelSettingRef: Ref<InstanceType<typeof ModelSetting> | null> = ref(null);
+let modelSwitchRef: Ref<InstanceType<typeof ModelSwicth> | null> = ref(null);
 
 function selectPrompt(prompt: Prompt) {
   inputContent.value = prompt.content + "\n" + inputContent.value;
@@ -41,14 +44,92 @@ let props = defineProps({
   },
 });
 
-defineEmits<{
-  // 按下发送按钮
-  (event: "sendMessage", content: Message): void;
+const emit = defineEmits<{
+  (event: "addMessage", message: Message): void;
 }>();
 
+
+let inputContent = ref("");
+let attachFile: Ref<FileList | null> = ref<FileList | null>(null);
+function sendMessage() {
+  if (inputContent.value.trim() || attachFile.value) {
+    const message = new Message(undefined, inputContent.value, MessageType.USER, undefined, attachFile.value);
+    emit("addMessage", message);
+    inputContent.value = "";
+    attachFile.value = null;
+
+    fetchAPI(modelSwitchRef.value?.currentModel!, message!, modelSettingRef.value?.modelConfig ?? new ModelConfig)
+    .then((response) => {
+      emit("addMessage", response);
+    });
+  }
+}
+
+function handleFileChange(event: Event) {
+  const fileInput = event.target as HTMLInputElement;
+  if (fileInput.files && fileInput.files) {
+    attachFile.value = fileInput.files;
+  }
+}
+
+async function fetchAPI(
+  model: Model,
+  message: Message,
+  config: ModelConfig
+): Promise<Message> {
+  try {
+    const response = await fetch(model.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: model.getFullKey(),
+      },
+      body: JSON.stringify({
+        model: model.name,
+        messages: [
+          { role: "system", content: config.systemPrompt },
+          { role: "user", content: message.content },
+        ],
+        temperature: config.temperature,
+        max_tokens: config.maxTokens,
+        top_p: config.topP,
+        top_k: config.topK,
+        frequency_penalty: config.frequencyPenalty,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    
+    const botResponse = responseData.choices[0]?.message?.content || "No response";
+
+    return new Message(
+      undefined,
+      botResponse,
+      MessageType.BOT,
+      undefined
+    );
+
+  } catch (error) {
+    const errorMessage = error instanceof Error 
+      ? `Error: ${error.message}`
+      : "Failed to fetch API response";
+
+    return new Message(
+      undefined,
+      errorMessage,
+      MessageType.BOT,
+      undefined
+    );
+  }
+}
+
 defineExpose({
-  selectedModel: Model
-});
+  modelSwitchRef
+})
 </script>
 
 <template>
@@ -129,7 +210,7 @@ defineExpose({
             >模型切换</span
           >
         </div>
-        <ModelSwicth v-if="modelSwitch" />
+        <ModelSwicth v-show="modelSwitch" ref="modelSwitchRef" />
       </div>
       <!-- Command -->
       <div
@@ -190,11 +271,14 @@ defineExpose({
             id="inputAttach"
             class="hidden"
             :accept="acceptAttachString"
+            @change="handleFileChange"
           />
         </div>
 
         <!-- Send Button -->
-        <button>
+        <button
+          @click="sendMessage"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="19"
@@ -213,5 +297,5 @@ defineExpose({
   </div>
 
   <!-- Pop -->
-  <ModelSetting v-if="modelSetting" @close="modelSetting = !modelSetting" />
+  <ModelSetting v-show="modelSetting" @close="modelSetting = false" ref="modelSettingRef" />
 </template>

@@ -24,6 +24,11 @@ defineProps({
     required: true,
   },
 });
+
+defineEmits<{
+  (e: "deleteMessage", message: Message): void;
+  (e: "addToFavorite", message: Message): void;
+}>();
 </script>
 
 <template>
@@ -37,6 +42,9 @@ defineProps({
       :img="message.sender === MessageType.BOT ? model.img : userImg"
       :name="message.sender === MessageType.BOT ? model.name : 'User'"
       :key="message.sendTime"
+
+      @deleteMessage="$emit('deleteMessage', message)"
+      @addToFavorite="$emit('addToFavorite', message)"
     />
   </div>
 </template>

@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { Tab } from "../../../model/Tab";
+import type { Message } from "../../../model/Message";
 
 let tabs = ref<Tab[]>(initTabs());
 const activedTab = computed(() => tabs.value.find(tab => tab.isActive));
 
 function addTab(newTab: Tab) {
+  if(tabs.value.some(tab => tab.id === newTab.id)) {
+    activateTab(newTab);
+    return;
+  }
   tabs.value.push(newTab);
   activateTab(newTab);
   
@@ -35,6 +40,20 @@ function deleteTab(deletedTab: Tab) {
   saveTabsToSessionStorage(tabs.value);
 }
 
+function addMessage(message: Message) {
+  const tab = activedTab.value;
+  if (!tab) return;
+  tab.messages.push(message);
+  saveTabsToSessionStorage(tabs.value);
+}
+
+function deleteMessage(message: Message) {
+  const tab = activedTab.value;
+  if (!tab) return;
+  tab.messages = tab.messages.filter(msg => msg.sendTime !== message.sendTime);
+  saveTabsToSessionStorage(tabs.value);
+}
+
 function initTabs() {
   const storedTabs: Tab[] = getTabsFromSessionStorage();
 
@@ -60,7 +79,9 @@ defineExpose({
   activedTab,
   activateTab,
   addTab,
-  deleteTab
+  deleteTab,
+  addMessage,
+  deleteMessage
 });
 
 defineEmits<{
