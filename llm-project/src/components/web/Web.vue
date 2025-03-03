@@ -7,7 +7,7 @@ import { ref, computed, onMounted } from "vue";
 import TabBar from "./components/TabBar.vue";
 import { Model } from "../../model/Model";
 import { Tab } from "../../model/Tab";
-import { Message } from "../../model/Message";
+import { Message, MessageType } from "../../model/Message";
 
 const tabList = ref<Message[]>([]);
 const isHistoryOpen = ref(true);
@@ -90,7 +90,7 @@ const handleSendMessage = (message: Message) => {
 
 const handleReceiveMessage = (message: Message) => {
   tabList.value.push(message);
-  saveTab(message);
+  // saveTab(message);
 };
 
 onMounted(() => {
@@ -130,7 +130,35 @@ onMounted(() => {
 
       <!-- Chat -->
       <div class="grow w-full text-white md:px-14">
-        <DialogBox :messages="activeMessages" :model="model" :userImg="userImg" />
+        <!-- <DialogBox :messages="activeMessages" :model="model" :userImg="userImg" /> -->
+        <div v-for="msg in tabList" :key="msg.id">
+          <div
+            v-if="msg.sender === MessageType.USER"
+            class="h-fit flex flex-row-reverse items-start justify-start gap-2"
+          >
+            <img
+              :src="userImg"
+              alt="User"
+              class="size-10 aspect-square rounded-full bg-amber-50"
+            />
+            <div class="rounded-2xl p-2 max-w-[90%] bg-gray-800">
+              <p class="text-pretty break-words">{{ msg.content }}</p>
+            </div>
+          </div>
+          <div
+            v-if="msg.sender === MessageType.BOT"
+            class="h-fit flex items-start justify-start gap-2"
+          >
+            <img
+              :src="model.icon"
+              alt="AI"
+              class="size-10 aspect-square rounded-full bg-amber-50"
+            />
+            <div class="rounded-2xl bg-gray-800 p-2 max-w-[90%]">
+              <p class="text-pretty break-words">{{ msg.content }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

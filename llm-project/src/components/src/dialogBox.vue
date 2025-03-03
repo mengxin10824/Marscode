@@ -53,7 +53,9 @@ const handleSend = async (content: string) => {
 
   try {
     await streamChatCompletion([userMsg], (chunk) => {
-      handleStreamResponse(chunk, (content) => aiMsg.updateContent(content));
+      handleStreamResponse(chunk, (content) => {
+        aiMsg.updateContent(content); // 更新 aiMsg 的内容
+      });
     });
   } finally {
     aiMsg.isStreaming = false;
@@ -76,11 +78,19 @@ const handleStreamResponse = (chunk: string, onData: (content: string) => void) 
     .split("\n")
     .filter((line) => line.trim() && line.startsWith("data: "));
 
+  let combinedContent = ""; // 用于组合分块的 content
+
   lines.forEach((line) => {
-    const data = JSON.parse(line.replace("data: ", "")) as StreamChunk;
-    const content = data.choices[0].delta.content || "";
-    onData(content);
+    try {
+      const data = JSON.parse(line.replace("data: ", "")) as StreamChunk;
+      const content = data.choices[0].delta.content || "";
+      combinedContent += content; // 将分块的 content 组合起来
+    } catch (error) {
+      console.error("Error parsing stream chunk:", error);
+    }
   });
+
+  onData(combinedContent); // 将组合后的 content 传递给回调函数
 };
 
 const activeMessages = computed(() => props.messages);

@@ -112,7 +112,8 @@ export const streamChatCompletion = async (
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: _currentModel.id,
+            // model: _currentModel.id,
+            model: "deepseek-ai/DeepSeek-V3",
             messages: messages.map(m => ({ role: 'user', content: m.content })),
             stream: true,
             temperature: 0.7

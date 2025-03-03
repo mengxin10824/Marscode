@@ -48,7 +48,8 @@ export class Message {
     }
 
     updateContent(newContent: string) {
-        this.contentBuffer.push(newContent);
-        this.content = this.contentBuffer.join('');
+        // this.contentBuffer.push(newContent);
+        // this.content = this.contentBuffer.join('');
+        this.content += newContent;
     }
 }
