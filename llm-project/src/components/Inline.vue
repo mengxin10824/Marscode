@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import DialogBox from "./src/DialogBox.vue";
-import InputBox from "./src/InputBox.vue";
+// import DialogBox from "./src/DialogBox.vue";
+// import InputBox from "./src/InputBox.vue";
 
 import { ref } from "vue";
 let inputContent = ref("");
@@ -71,7 +71,7 @@ let inputContent = ref("");
     </div>
 
     <div class="overflow-y-scroll no-scrollbar flex-grow">
-      <DialogBox />
+      <!-- <DialogBox /> -->
     </div>
 
     <InputBox 

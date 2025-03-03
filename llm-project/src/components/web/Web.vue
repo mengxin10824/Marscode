@@ -5,59 +5,58 @@ import Favorite from "./components/Favorite.vue";
 import InputBox from "../src/InputBox.vue";
 import TabBar from "./components/TabBar.vue";
 
-import { computed, ref } from "vue";
-import { Model } from "../../model/Model";
+import { ref } from "vue"; 
 import { Tab } from "../../model/Tab";
+import type { Message } from "../../model/Message";
 
 let isShowFavorite = ref(false);
 let isShowHistory = ref(false);
 
-// 测试 Tab
-const tabs = ref<Tab[]>([
-  new Tab(undefined, "New Tab", true, undefined)
-]);
-let model = new Model(undefined, "Bot", "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png", "gpt-3.5-turbo", "Bearer sk-1234567890"); 
-let userImg = "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/user.png";
-// 测试 Tab
+let userImg = ref<string>("/src/icon.png");
 
-const activeMessages = computed(() => {
-  // 监听当前激活的 Tab
-  const activeTab = tabs.value.find((tab) => tab.isActive);
-  if (activeTab) {
-    return activeTab.messages;
-  }
-  return [];
-});
+let tabBarRef = ref<InstanceType<typeof TabBar> | null>(null)
+let historyRef = ref<InstanceType<typeof History> | null>(null)
+let favoriteRef = ref<InstanceType<typeof Favorite> | null>(null)
+let inputBoxRef = ref<InstanceType<typeof InputBox> | null>(null)
 
-function addNewTab(newTab: Tab | undefined) {
+function addTab(newTab: Tab | undefined) {
   if (!newTab) {
-    newTab = new Tab(undefined, "New Tab", false, undefined);
+    newTab = new Tab(undefined, "New Tab", true, undefined);
   }
-
-  // 添加到历史
-
-  tabs.value.push(newTab);
-  activateTab(newTab);
+  historyRef.value?.addHistory(newTab);
+  tabBarRef.value?.addTab(newTab);
 }
-
 
 function activateTab(selectedTab: Tab) {
-  tabs.value.forEach((tab) => {
-    tab.isActive = (tab.id === selectedTab.id);
-  });
+  tabBarRef.value?.activateTab(selectedTab);
+  historyRef.value?.addHistory(selectedTab);
 }
 
-function deleteTab(tabToDelete: Tab) {
-  const index = tabs.value.findIndex(tab => tab.id === tabToDelete.id);
-  if (index === -1) return;
+function deleteTab(tab: Tab) {
+  tabBarRef.value?.deleteTab(tab);
+}
 
-  const wasActive = tabToDelete.isActive;
-  tabs.value = tabs.value.filter(tab => tab.id !== tabToDelete.id);
-
-  if (wasActive && tabs.value.length > 0) {
-    const newIndex = Math.min(index, tabs.value.length - 1);
-    activateTab(tabs.value[newIndex]);
+function addHistory(newHistory: Tab | undefined) {
+  if (!newHistory) {
+    newHistory = new Tab(undefined, "New Tab", true, undefined);
   }
+  tabBarRef.value?.addTab(newHistory);
+  historyRef.value?.addHistory(newHistory);
+
+  isShowHistory.value = false;
+}
+
+function deleteHistory(history: Tab) {
+  historyRef.value?.deleteHistory(history);
+  tabBarRef.value?.deleteTab(history);
+}
+
+function addFavorite(newFavorite: Message) {
+  favoriteRef.value?.addFavorite(newFavorite);
+}
+
+function deleteFavorite(favorite: Message) {
+  favoriteRef.value?.deleteFavorite(favorite);
 }
 
 </script>
@@ -83,8 +82,8 @@ function deleteTab(tabToDelete: Tab) {
     >
       <!-- Tab Bar -->
       <TabBar
-        :tabs="tabs"
-        @addTab="addNewTab(undefined)"
+        ref="tabBarRef"
+        @addTab="addTab"
         @activateTab="activateTab"
         @deleteTab="deleteTab"
       />
@@ -92,8 +91,8 @@ function deleteTab(tabToDelete: Tab) {
       <!-- Chat -->
       <div class="grow w-full text-white md:px-14">
         <DialogBox
-          :messages="activeMessages"
-          :model="model"
+          :messages="tabBarRef?.activedTab?.messages ?? []"
+          :model="inputBoxRef?.selectedModel!"
           :userImg="userImg"
         />
       </div>
@@ -102,20 +101,27 @@ function deleteTab(tabToDelete: Tab) {
     <!-- Input Box -->
     <div class="relative min-h-40">
       <InputBox
+        ref="inputBoxRef"
         :isToolBar="true"
       />
     </div>
 
-    <Favorite
-        v-if="isShowFavorite"
-        @close="isShowFavorite = false"
-    />
     <History
-        v-if="isShowHistory"
+        v-show="isShowHistory"
         @close="isShowHistory = false"
+        @addHistory="addHistory"
+        @deleteHistory="deleteHistory"
+        ref="historyRef"
+        :img="userImg"
     />
+    <Favorite
+        v-show="isShowFavorite"
+        @close="isShowFavorite = false"
+        @addFavorite="addFavorite"
+        @deleteFavorite="deleteFavorite"
+        ref="favoriteRef"
+    />
+    
   </div>
 
 </template>
-
-<style scoped></style>

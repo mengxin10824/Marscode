@@ -1,14 +1,12 @@
 <script lang="ts" setup>
-import { onMounted, ref, type Ref } from "vue";
+import { ref, type Ref } from "vue";
 import { Prompt } from "../../model/Prompt";
-import { getNow } from "../../model/Time";
-import { generateUUID } from "../../model/UUID";
 
 const emits = defineEmits<{
   (event: "selectPrompt", prompt: Prompt): void;
 }>();
 
-const allPrompts = ref<Prompt[]>([]);
+const allPrompts = ref<Prompt[]>(getPromptsfromLocalStorage());
 
 const prompt: Ref<Prompt | null> = ref(null);
 const showAddForm = ref(false);
@@ -16,23 +14,25 @@ const newName = ref("");
 const newContent = ref("");
 const hoveredPromptId = ref<string | null>(null);
 
-// 添加新的提示词
+
 function confirmAdd() {
   const trimmedName = newName.value.trim();
   const trimmedContent = newContent.value.trim();
   
   if (trimmedName && trimmedContent) {
     const newPrompt = new Prompt(
-      generateUUID(),
+      undefined,
       trimmedName,
       trimmedContent,
-      getNow()
+      undefined
     );
     allPrompts.value.push(newPrompt);
     newName.value = "";
     newContent.value = "";
     showAddForm.value = false;
   }
+
+  savePromptsToLocalStorage();
 }
 
 function cancelAdd() {
@@ -43,6 +43,7 @@ function cancelAdd() {
 
 function removePrompt(promptToRemove: Prompt) {
   allPrompts.value = allPrompts.value.filter(p => p.id !== promptToRemove.id);
+  savePromptsToLocalStorage();
 }
 
 function selectPrompt(selectedPrompt: Prompt) {
@@ -50,19 +51,14 @@ function selectPrompt(selectedPrompt: Prompt) {
   emits('selectPrompt', selectedPrompt);
 }
 
-onMounted(() => {
-  try {
-    const saved = localStorage.getItem("prompts");
-    if (saved) {
-      allPrompts.value = JSON.parse(saved).map((p: any) => 
-        new Prompt(p.id, p.name, p.content, p.createdTime)
-      );
-    }
-  } catch (error) {
-    console.error("Failed to load prompts from localStorage:", error);
-    allPrompts.value = [];
-  }
-});
+function getPromptsfromLocalStorage() {
+  const storedPrompts = localStorage.getItem("prompts");
+  return storedPrompts ? JSON.parse(storedPrompts) : [];
+}
+
+function savePromptsToLocalStorage() {
+  localStorage.setItem("prompts", JSON.stringify(allPrompts.value));
+}
 </script>
 
 <template>

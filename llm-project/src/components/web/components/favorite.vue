@@ -1,38 +1,45 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import { Message, MessageType } from '../../../model/Message';
+import { ref } from 'vue';
+import { Message } from '../../../model/Message';
 import SingleFavorite from './SingleFavorite.vue';
 
-defineEmits<{
-  (event: 'close'): void;
-}>();
-const favorites = ref<Array<Message>>([
-  new Message(undefined, 'Hello', MessageType.USER, undefined, undefined)
-]);
+let favorites = ref<Message[]>(getFavoritesFromLocalStorage());
 
-const getFavoritesFromLocalStorage = () => {
+function addFavorite(newFavorite: Message) {
+  favorites.value.push(newFavorite);
+
+  saveFavoritesToLocalStorage();
+}
+
+function deleteFavorite(favorite: Message) {
+  const index = favorites.value.findIndex((item) => item.id === favorite.id);
+  if (index === -1) return;
+
+  favorites.value.splice(index, 1);
+
+  saveFavoritesToLocalStorage();
+}
+
+function getFavoritesFromLocalStorage() {
   const storedFavorites = localStorage.getItem('favorites');
   return storedFavorites ? JSON.parse(storedFavorites) : [];
-};
+}
 
-const saveFavoritesToLocalStorage = () => {
+function saveFavoritesToLocalStorage() {
   localStorage.setItem('favorites', JSON.stringify(favorites.value));
 };
 
-const handleDelete = (message: Message) => {
-  const index = favorites.value.findIndex((favorite) => favorite.id === message.id);
-  if (index !== -1) {
-    favorites.value.splice(index, 1);
-    saveFavoritesToLocalStorage();
-  }
-};
+defineEmits<{
+  (e: 'close'): void,
+  (e: 'addFavorite', newFavorite: Message): void,
+  (e: 'deleteFavorite', favorite: Message): void,
+}>();
 
-onMounted(() => {
-  if (favorites.value.length) {
-    favorites.value = getFavoritesFromLocalStorage();
-  }
+defineExpose({
+  favorites,
+  addFavorite,
+  deleteFavorite,
 });
-
 </script>
 
 <template>
@@ -58,7 +65,7 @@ onMounted(() => {
           :key="favorite.id"
           :favoriteIndex="index"
           :favorite="favorite"
-          @delete="handleDelete"
+          @delete="$emit('deleteFavorite', favorite)"
         />
       </div>
     </div>

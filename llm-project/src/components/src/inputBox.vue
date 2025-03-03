@@ -6,6 +6,20 @@ import AllPrompts from "./AllPrompts.vue";
 import { defineProps, defineEmits, ref } from "vue";
 import { Message } from "../../model/Message";
 import { Prompt } from "../../model/Prompt";
+import { Model } from "../../model/Model";
+
+let prompt = ref(false);
+let safetyMode = ref(false);
+let modelSwitch = ref(false);
+let modelSetting = ref(false);
+
+let inputContent = ref("");
+let selectedModel = ref<Model | null>(null);
+
+function selectPrompt(prompt: Prompt) {
+  inputContent.value = prompt.content + "\n" + inputContent.value;
+}
+
 let props = defineProps({
   isToolBar: {
     // 是否显示工具栏
@@ -32,16 +46,9 @@ defineEmits<{
   (event: "sendMessage", content: Message): void;
 }>();
 
-let prompt = ref(false);
-let safetyMode = ref(false);
-let modelSwitch = ref(false);
-let modelSetting = ref(false);
-
-let inputContent = ref("");
-
-function selectPrompt(prompt: Prompt) {
-  inputContent.value = prompt.content + "\n" + inputContent.value;
-}
+defineExpose({
+  selectedModel: Model
+});
 </script>
 
 <template>
@@ -77,7 +84,7 @@ function selectPrompt(prompt: Prompt) {
             提示词
           </span>
         </div>
-        <AllPrompts v-if="prompt" :selectPrompt="selectPrompt" />
+        <AllPrompts v-show="prompt" @selectPrompt="selectPrompt" />
       </div>
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"

@@ -1,50 +1,57 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import SingleHistory from "./SingleHistory.vue";
 import { Tab } from "../../../model/Tab";
 
+let histories = ref<Tab[]>(getHistoriesFromLocalStorage());
+let isEditing = ref(false);
 
+function addHistory(newHistory: Tab) {
+  if (newHistory.isPrivate) {
+    return;
+  }
+  if (histories.value.some((item) => item.id === newHistory.id)) {
+    return;
+  }
+  
+  histories.value.push(newHistory);
+  saveHistoriesToLocalStorage();
+}
 
-const emit = defineEmits<{
-  (event: "close"): void;
-  (event: "newTab", newTab: Tab): void;
+function deleteHistory(history: Tab) {
+  const index = histories.value.findIndex((item) => item.id === history.id);
+  if (index === -1) return;
+
+  histories.value.splice(index, 1);
+  
+  saveHistoriesToLocalStorage();
+}
+
+function getHistoriesFromLocalStorage() {
+  const storedHistories: Tab[] = JSON.parse(localStorage.getItem("histories") || "[]");
+  return storedHistories;
+}
+
+function saveHistoriesToLocalStorage() {
+  localStorage.setItem("histories", JSON.stringify(histories.value));
+}
+
+defineProps<{
+  img: string
 }>();
 
-const isEditing = ref(false);
-const histories = ref<Array<Tab>>([]);
+defineEmits<{
+  (e: 'close'): void,
+  (e: 'addHistory', newHistory: Tab | undefined): void,
+  (e: 'deleteHistory', history: Tab): void
+}>();
 
-const getHistoriesFromLocalStorage = () => {
-  const storedHistories = localStorage.getItem("histories");
-  return storedHistories ? JSON.parse(storedHistories) : [];
-};
-
-const saveHistoriesToLocalStorage = (histories: Array<Tab>) => {
-  localStorage.setItem("histories", JSON.stringify(histories));
-};
-
-onMounted(() => {
-  histories.value = getHistoriesFromLocalStorage();
+defineExpose({
+  histories,
+  addHistory,
+  deleteHistory,
 });
 
-const handleDelete = (id: string) => {
-  const index = histories.value.findIndex((tab) => tab.id === id);
-  if (index !== -1) {
-    histories.value.splice(index, 1);
-    saveHistoriesToLocalStorage(histories.value);
-  }
-};
-
-const switchTab = (tab: Tab) => {
-  tab.updateTime();
-  emit("newTab", tab);
-};
-
-const addNewTab = () => {
-  const newTab = new Tab(undefined, "New Tab", false, undefined);
-  histories.value.push(newTab);
-  switchTab(newTab); 
-  saveHistoriesToLocalStorage(histories.value);
-};
 </script>
 
 <template>
@@ -59,7 +66,7 @@ const addNewTab = () => {
         &leftarrow; 收起
       </div>
       <img
-        src=""
+        :src="img"
         alt=""
         class="size-15 aspect-square rounded-full bg-amber-50"
       />
@@ -73,7 +80,7 @@ const addNewTab = () => {
         <span>所有历史</span>
         <!-- 添加按钮 -->
         <svg
-          @click="addNewTab"
+          @click="$emit('addHistory', undefined)"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -88,9 +95,9 @@ const addNewTab = () => {
         <SingleHistory
           v-for="item in histories"
           :key="item.updatedTime"
-          :history-item="item"
-          :is-editing="isEditing"
-          @delete="handleDelete(item.id)"
+          :historyItem="item"
+          :isEditing="isEditing"
+          @delete="deleteHistory(item)"
         />
       </div>
     </div>
