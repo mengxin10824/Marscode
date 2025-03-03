@@ -46,10 +46,17 @@ interface ChatCompletionResponse {
     };
 }
 
-interface StreamChunk {
-    choices: Array<{
-        delta: { content?: string }
-    }>
+// interface StreamChunk {
+//     choices: Array<{
+//         delta: { content?: string }
+//     }>
+// }
+export interface StreamChunk {
+    choices: {
+        delta: {
+            content: string;
+        };
+    }[];
 }
 
 export class AIError extends Error {

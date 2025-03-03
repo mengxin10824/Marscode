@@ -1,41 +1,39 @@
 <script lang="ts" setup>
-<<<<<<< HEAD
-import { ref } from 'vue';
+import { onMounted, ref } from "vue";
 
-const favoriteList = ref([]);
+const favoriteList = ref<Message[]>([]);
 
 const loadFavorites = () => {
-    const favorites = localStorage.getItem('favorites');
-    if (favorites) {
-        favoriteList.value = JSON.parse(favorites);
-    }
-}
+  const favorites = localStorage.getItem("favorites");
+  if (favorites) {
+    favoriteList.value = JSON.parse(favorites);
+  }
+};
 
 const saveFavorite = (message: Message) => {
-    favoriteList.value.push(message);
-    localStorage.setItem('favorites', JSON.stringify(favoriteList.value));
-}
+  favoriteList.value.push(message);
+  localStorage.setItem("favorites", JSON.stringify(favoriteList.value));
+};
 
-defineEmits(["close"]);
-=======
-import { onMounted, ref } from 'vue';
-import { Message, MessageType } from '../../../model/Message';
-import SingleFavorite from './SingleFavorite.vue';
+import { Message, MessageType } from "../../../model/Message";
+import SingleFavorite from "./SingleFavorite.vue";
 
 defineEmits<{
-  (event: 'close'): void;
+  (event: "close"): void;
+  (event: "select", item: Message): void;
 }>();
+
 const favorites = ref<Array<Message>>([
-  new Message(undefined, 'Hello', MessageType.USER, undefined, undefined)
+  new Message("default-id", "Hello", MessageType.USER, "default-time", null),
 ]);
 
 const getFavoritesFromLocalStorage = () => {
-  const storedFavorites = localStorage.getItem('favorites');
+  const storedFavorites = localStorage.getItem("favorites");
   return storedFavorites ? JSON.parse(storedFavorites) : [];
 };
 
 const saveFavoritesToLocalStorage = () => {
-  localStorage.setItem('favorites', JSON.stringify(favorites.value));
+  localStorage.setItem("favorites", JSON.stringify(favorites.value));
 };
 
 const handleDelete = (message: Message) => {
@@ -52,7 +50,10 @@ onMounted(() => {
   }
 });
 
->>>>>>> fixbug-layout
+defineExpose({
+  loadFavorites,
+  saveFavorite,
+});
 </script>
 
 <template>
@@ -60,7 +61,10 @@ onMounted(() => {
     class="absolute right-0 w-full pr-5 h-dvh flex flex-col gap-2 p-4 rounded-2xl bg-[#333333] -mr-2 max-w-2xs"
   >
     <div class="flex flex-col gap-5 p-5 items-end">
-      <div class="p-1 bg-white text-black rounded-2xl text-sm w-fit" @click="$emit('close')">
+      <div
+        class="p-1 bg-white text-black rounded-2xl text-sm w-fit"
+        @click="$emit('close')"
+      >
         收起 &rightarrow;
       </div>
     </div>
@@ -74,7 +78,7 @@ onMounted(() => {
       <!-- 收藏记录 -->
       <div class="flex flex-col gap-4 justify-start p-4">
         <SingleFavorite
-          v-for="favorite, index in favorites"
+          v-for="(favorite, index) in favorites"
           :key="favorite.id"
           :favoriteIndex="index"
           :favorite="favorite"

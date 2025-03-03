@@ -30,16 +30,12 @@ export class Message {
     // 是否有附件
     attachMent: Array<File> | null = null;
 
-<<<<<<< HEAD
     hasAttachment: boolean = false;
 
     isStreaming: boolean = false;
     contentBuffer: string[] = [];
 
-    constructor(id: string, content: string, sender: MessageType, sendTime: string) {
-=======
-    constructor(id: string = generateUUID(), content: string, sender: MessageType, sendTime: string = getNow(), attachMent: Array<File> | null = null) {
->>>>>>> fixbug-layout
+    constructor(id: string, content: string, sender: MessageType, sendTime: string, attachMent: Array<File> | null = null) {
         this.id = id;
         this.content = content;
         this.sender = sender;

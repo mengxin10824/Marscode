@@ -28,12 +28,7 @@ let inputContent = ref("");
           maskUnits="userSpaceOnUse"
           style="mask-type: luminance"
         >
-          <path
-            fill="#fff"
-            fill-rule="evenodd"
-            d="M0 0h16v16H0V0Z"
-            clip-rule="evenodd"
-          />
+          <path fill="#fff" fill-rule="evenodd" d="M0 0h16v16H0V0Z" clip-rule="evenodd" />
         </mask>
         <g mask="url(#a)">
           <path
@@ -45,11 +40,7 @@ let inputContent = ref("");
 
       <!-- Icon -->
       <div class="flex flex-col gap-2 items-center">
-        <img
-          src=""
-          alt=""
-          class="size-9 aspect-square rounded-full bg-amber-50"
-        />
+        <img src="" alt="" class="size-9 aspect-square rounded-full bg-amber-50" />
         <span>Ghost</span>
       </div>
 
@@ -71,11 +62,20 @@ let inputContent = ref("");
     </div>
 
     <div class="overflow-y-scroll no-scrollbar flex-grow">
-      <DialogBox />
+      <DialogBox
+        :messages="[]"
+        :model="{
+          id: '',
+          name: '',
+          icon: '',
+          url: '',
+          apiKey: '',
+          getFullKey: () => '',
+        }"
+        :userImg="''"
+      />
     </div>
 
-    <InputBox 
-      :input-content="inputContent"
-    />
+    <InputBox :input-content="inputContent" />
   </div>
 </template>
