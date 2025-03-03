@@ -33,8 +33,8 @@ export class Model {
         public readonly id: string,
         public name: string,
         public icon: string,     // 图标路径
-        public url: string,      // API地址
-        public apiKey: string    // 第五个参数
+        public url: string = import.meta.env.VITE_API_BASE_URL,  // 默认使用环境变量
+        public apiKey: string = import.meta.env.VITE_FALLBACK_API_KEY
     ) {}
 
     public getFullKey(): string {

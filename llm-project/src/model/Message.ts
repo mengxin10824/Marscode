@@ -26,10 +26,9 @@ export class Message {
 
     hasAttachment: boolean = false;
 
-    // 新增流式处理状态
     isStreaming: boolean = false;
     contentBuffer: string[] = [];
-    
+
     constructor(id: string, content: string, sender: MessageType, sendTime: string) {
         this.id = id;
         this.content = content;

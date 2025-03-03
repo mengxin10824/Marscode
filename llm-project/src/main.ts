@@ -13,7 +13,9 @@ const defaultModel = new Model(
     import.meta.env.VITE_FALLBACK_API_KEY
 )
 
+// 初始化AI服务
 initAIService(defaultModel)
 
+// 创建Vue应用
 const app = createApp(App)
 app.mount('#app')

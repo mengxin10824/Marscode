@@ -1,5 +1,40 @@
 <script lang="ts" setup>
-defineEmits(["close"]);
+import { ref, onMounted } from 'vue';
+import { Message } from '@/model/Message';
+
+// 历史记录列表
+const historyList = ref<Message[]>([]);
+
+// 加载历史记录
+const loadHistory = () => {
+    const history = localStorage.getItem('chatHistory');
+    if (history) {
+        historyList.value = JSON.parse(history);
+    }
+}
+
+// 保存历史记录
+const saveHistory = (message: Message) => {
+    historyList.value.push(message);
+    localStorage.setItem('chatHistory', JSON.stringify(historyList.value));
+}
+
+// 选择历史记录
+const selectHistory = (item: Message) => {
+    emit('select', item);
+}
+
+onMounted(() => {
+    loadHistory();
+});
+
+// 定义事件
+const emit = defineEmits(['select']);
+
+defineExpose({
+  historyList,
+  saveHistory
+});
 </script>
 
 <template>
@@ -37,44 +72,10 @@ defineEmits(["close"]);
       </div>
 
       <!-- 历史记录 -->
-      <div class="flex flex-col gap-4 items-center justify-start p-4">
-        <!-- 选中对话 -->
-        <div
-          class="p-2 text-black rounded-xl text-sm w-full flex justify-between items-center hover:bg-blue-300 shadow-2xl bg-blue-200"
-        >
-          <span>历史对话1</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="#000"
-              d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-4.5 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"
-            />
-          </svg>
-        </div>
-
-        <div
-          class="p-2 text-black rounded-xl text-sm w-full flex justify-between items-center hover:bg-blue-300 shadow-2xl bg-white"
-        >
-          <span>历史对话1</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="#000"
-              d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-4.5 6.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"
-            />
-          </svg>
+      <div class="history-container">
+        <div v-for="(item, index) in historyList" :key="index" class="history-item" @click="selectHistory(item)">
+          <div class="history-content">{{ item.content }}</div>
+          <div class="history-time">{{ item.timestamp }}</div>
         </div>
       </div>
     </div>
@@ -93,7 +94,7 @@ defineEmits(["close"]);
         >
           <path
             fill="currentColor"
-            d="M13.3 8.4a.7.7 0 0 1 0-.8l.8-1a.7.7 0 0 0 .1-.8l-1.3-2.3a.7.7 0 0 0-.7-.3l-1.3.2a.7.7 0 0 1-.8-.4l-.4-1.2a.7.7 0 0 0-.6-.5H6.4a.7.7 0 0 0-.6.5L5.4 3a.7.7 0 0 1-.8.4l-1.3-.2a.7.7 0 0 0-.6.3L1.3 5.8a.7.7 0 0 0 .1.8l.8 1a.7.7 0 0 1 0 .8l-.8 1a.7.7 0 0 0 0 .8l1.3 2.3a.7.7 0 0 0 .7.3l1.2-.2a.7.7 0 0 1 .8.4l.4 1.2a.7.7 0 0 0 .7.5H9a.7.7 0 0 0 .7-.5l.4-1.2a.7.7 0 0 1 .7-.4l1.3.2a.7.7 0 0 0 .7-.3l1.3-2.3a.7.7 0 0 0 0-.8l-1-1Zm-1 1 .5.5-.8 1.5-.8-.1a2 2 0 0 0-2.3 1.3l-.3.7H7l-.2-.7a2 2 0 0 0-2.3-1.4l-.8.2-.9-1.5.5-.6a2 2 0 0 0 0-2.6L2.7 6l.9-1.5.8.2a2 2 0 0 0 2.3-1.4l.2-.7h1.7l.3.7a2 2 0 0 0 2.3 1.4l.8-.2.8 1.5-.5.6a2 2 0 0 0 0 2.6Zm-4.5-4a2.7 2.7 0 1 0 0 5.3 2.7 2.7 0 0 0 0-5.4Zm0 4a1.3 1.3 0 1 1 0-2.7 1.3 1.3 0 0 1 0 2.6Z"
+            d="M13.3 8.4a.7.7 0 0 1 0-.8l.8-1a.7.7 0 0 0 .1-.8l-1.3-2.3a.7.7 0 0 0-.7-.3l-1.3.2a.7.7 0 0 1-.8-.4l-.4-1.2a.7.7 0 0 0-.6-.5H6.4a.7.7 0 0 0-.6.5L5.4 3a.7.7 0 0 1-.8.4l-1.3-.2a.7.7 0 0 0-.6.3L1.3 5.8a.7.7 0 0 0 .1.8l.8 1a.7.7 0 0 1 0 .8l-.8 1a.7.7 0 0 0 0 .8l1.3 2.3a.7.7 0 0 0 .7.3l1.2-.2a.7.7 0 0 1 .8.4l.4 1.2a.7.7 0 0 0 .7.5H9a.7.7 0 0 0 .7-.5l.4-1.2a.7.7 0 0 1 .7-.4l1.3.2a.7.7 0 0 0 .7-.3l1.3-2.3a.7.7 0 0 0 0-.8l-1-1Zm-1 1 .5.5-.8 1.5-.8-.1a2 2 0 0 0-2.3 1.3l-.3.7H7l-.2-.7a2 2 0 0 0-2.3-1.4l-.8.2-.9-1.5.5-.6a2 2 0 0 0 0-2.6L2.7 6l.9-1.5.8.2a2 2 0 0 0 2.3-1.4l.2-.7h1.7l.3.7a2 2 0 0 0 2.3 1.4l.8-.2.8 1.5-.5.6a2 2 0 0 0 0 2.6Zm-4.5-4a2.7 2.7 0 1 0 0 5.3 2.7 2.7 0 0 0 0-5.4Zm0 4a1.3 1.3 0 1 1 0 2.7 1.3 1.3 0 0 1 0-2.6Z"
           />
         </svg>
       </div>
@@ -117,3 +118,38 @@ defineEmits(["close"]);
     </div>
   </div>
 </template>
+
+<style scoped>
+.history-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-item {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.history-item:hover {
+  background-color: #f0f0f0;
+}
+
+.history-content {
+  font-size: 14px;
+  color: #333;
+}
+
+.history-time {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+</style>

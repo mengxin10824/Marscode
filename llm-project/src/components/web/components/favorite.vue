@@ -1,4 +1,20 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
+
+const favoriteList = ref([]);
+
+const loadFavorites = () => {
+    const favorites = localStorage.getItem('favorites');
+    if (favorites) {
+        favoriteList.value = JSON.parse(favorites);
+    }
+}
+
+const saveFavorite = (message: Message) => {
+    favoriteList.value.push(message);
+    localStorage.setItem('favorites', JSON.stringify(favoriteList.value));
+}
+
 defineEmits(["close"]);
 </script>
 

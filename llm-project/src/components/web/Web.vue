@@ -3,6 +3,31 @@ import DialogBox from "../src/DialogBox.vue";
 import Favorite from "./components/History.vue";
 import History from "./components/Favorite.vue";
 import InputBox from "../src/InputBox.vue";
+import { ref } from 'vue';
+
+const tabList = ref([]);
+const isHistoryOpen = ref(true);
+const isFavoriteOpen = ref(true);
+
+const loadTabs = () => {
+    const tabs = sessionStorage.getItem('tabs');
+    if (tabs) {
+        tabList.value = JSON.parse(tabs);
+    }
+}
+
+const saveTab = (message: Message) => {
+    tabList.value.push(message);
+    sessionStorage.setItem('tabs', JSON.stringify(tabList.value));
+}
+
+const toggleHistory = () => {
+  isHistoryOpen.value = !isHistoryOpen.value;
+};
+
+const toggleFavorite = () => {
+  isFavoriteOpen.value = !isFavoriteOpen.value;
+};
 </script>
 
 <template>

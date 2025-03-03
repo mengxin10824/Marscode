@@ -64,5 +64,70 @@ struct TodoItem: Identifiable {
         </div>
       </div>
     </div>
+
+    <div v-for="msg in messages" :key="msg.id">
+        <div v-if="msg.isStreaming" class="typing-indicator">
+            <!-- 加载动画 -->
+        </div>
+        <div v-html="formatContent(msg.content)"></div>
+    </div>
   </div>
 </template>
+
+<script lang="ts" setup>
+import { streamChatCompletion } from '@/services/aiService';
+import { Message, MessageType } from '@/model/Message';
+import { ref, nextTick } from 'vue';
+import MarkdownIt from 'markdown-it';
+
+const md = new MarkdownIt();
+
+const messages = ref<Message[]>([]);
+
+const handleSend = async (content: string) => {
+    const userMsg = new Message(/* 用户消息参数 */);
+    messages.value.push(userMsg);
+    
+    const aiMsg = new Message(/* AI消息参数 */);
+    aiMsg.isStreaming = true;
+    messages.value.push(aiMsg);
+
+    try {
+        await streamChatCompletion(
+            [userMsg], 
+            (chunk) => aiMsg.updateContent(chunk)
+        );
+    } finally {
+        aiMsg.isStreaming = false;
+    }
+}
+
+const formatContent = (content: string) => {
+    return md.render(content);
+}
+
+const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code)
+        .then(() => {
+            // 显示复制成功提示
+        })
+        .catch(() => {
+            // 显示复制失败提示
+        });
+}
+
+const handleStreamResponse = (chunk: string, onData: (content: string) => void) => {
+    const lines = chunk.split('\n')
+        .filter(line => line.trim() && line.startsWith('data: '));
+    
+    lines.forEach(line => {
+        const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
+        const content = data.choices[0].delta.content || '';
+        onData(content);
+    });
+}
+
+defineExpose({
+  handleSend
+});
+</script>
