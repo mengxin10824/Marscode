@@ -2,6 +2,11 @@
 import Web from "./components/web/Web.vue";
 import Search from "./components/Search.vue";
 import Inline from "./components/Inline.vue";
+
+import SingleMessage from "./components/src/SingleMessage.vue";
+import { Message, MessageType } from "./model/Message";
+let mess = new Message(undefined, `saldaslkdnklsadnbas11`, 1, "1")
+
 </script>
 
 <template>
@@ -21,4 +26,3 @@ import Inline from "./components/Inline.vue";
   </div>
 </template>
 
-<style scoped></style>

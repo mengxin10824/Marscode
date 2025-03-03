@@ -8,7 +8,7 @@ let inputContent = ref("");
 
 <template>
   <div
-    class="flex flex-col bg-black text-white rounded-2xl w-150 h-[80dvh] border-2 border-gray-300 p-4 gap-4"
+    class="flex flex-col bg-black text-white rounded-2xl w-150 h-[80dvh] border-2 border-gray-800 p-4 gap-4"
   >
     <div class="flex justify-between p-2 items-start">
       <!-- 关闭 -->
@@ -70,7 +70,7 @@ let inputContent = ref("");
       </svg>
     </div>
 
-    <div class="overflow-y-scroll">
+    <div class="overflow-y-scroll no-scrollbar flex-grow">
       <DialogBox />
     </div>
 

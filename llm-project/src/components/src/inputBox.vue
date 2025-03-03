@@ -1,19 +1,17 @@
 <script lang="ts" setup>
 import ModelSetting from "./ModelSetting.vue";
+import ModelSwicth from "./ModelSwitch.vue";
+import AllPrompts from "./AllPrompts.vue";
 
 import { defineProps, defineEmits, ref } from "vue";
+import { Message } from "../../model/Message";
+import { Prompt } from "../../model/Prompt";
 let props = defineProps({
-  inputContent: {
-    // 输入框内容
-    type: String,
-    required: true,
-    default: "",
-  },
   isToolBar: {
     // 是否显示工具栏
     type: Boolean,
     required: false,
-    default: false,
+    default: true,
   },
   allowAttach: {
     // 是否允许上传附件
@@ -29,50 +27,57 @@ let props = defineProps({
   },
 });
 
-defineEmits([
-  "send",  // 按下发送按钮
-  "attach", // 按下上传附件按钮
-  
-  // "prompt", // 提示词按钮
-  // "safetyMode", // 安全模式
-  // "modelSwitch", // 模型切换  
-  // "modelSetting", // 按下参数设置按钮
-]);
+defineEmits<{
+  // 按下发送按钮
+  (event: "sendMessage", content: Message): void;
+}>();
 
 let prompt = ref(false);
 let safetyMode = ref(false);
 let modelSwitch = ref(false);
 let modelSetting = ref(false);
+
+let inputContent = ref("");
+
+function selectPrompt(prompt: Prompt) {
+  inputContent.value = prompt.content + "\n" + inputContent.value;
+}
 </script>
 
 <template>
   <!-- Input Box -->
   <div class="w-full flex flex-col gap-2 p-2">
     <!-- Quick Menu -->
-    <div class="w-full flex item-center justify-start gap-2" v-if="props.isToolBar">
+    <div
+      class="w-full flex item-center justify-start gap-2"
+      v-if="props.isToolBar"
+    >
       <!-- Command -->
-      <div
-        class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
-        @click="prompt = !prompt"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-          viewBox="0 0 16 16"
+      <div class="relative">
+        <div
+          class="flex items-center relative w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+          @click="prompt = !prompt"
         >
-          <path
-            stroke="#000"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.333"
-            d="m5 6.667 1.667 1.666L5 10m3 0h2.666M4 3.333h8a1.331 1.331 0 0 1 1.333 1.334v6.666a1.356 1.356 0 0 1-.157.629 1.326 1.326 0 0 1-.79.647 1.322 1.322 0 0 1-.386.058H4a1.326 1.326 0 0 1-1.03-.488 1.34 1.34 0 0 1-.304-.846V4.667A1.333 1.333 0 0 1 4 3.333Z"
-          />
-        </svg>
-        <span class="text-sm font-black hidden md:block text-nowrap"
-          >提示词</span
-        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="none"
+            viewBox="0 0 16 16"
+          >
+            <path
+              stroke="#000"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.333"
+              d="m5 6.667 1.667 1.666L5 10m3 0h2.666M4 3.333h8a1.331 1.331 0 0 1 1.333 1.334v6.666a1.356 1.356 0 0 1-.157.629 1.326 1.326 0 0 1-.79.647 1.322 1.322 0 0 1-.386.058H4a1.326 1.326 0 0 1-1.03-.488 1.34 1.34 0 0 1-.304-.846V4.667A1.333 1.333 0 0 1 4 3.333Z"
+            />
+          </svg>
+          <span class="text-sm font-black hidden md:block text-nowrap">
+            提示词
+          </span>
+        </div>
+        <AllPrompts v-if="prompt" :selectPrompt="selectPrompt" />
       </div>
       <div
         class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
@@ -96,25 +101,28 @@ let modelSetting = ref(false);
         >
       </div>
       <!-- Command -->
-      <div
-        class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
-        @click="modelSwitch = !modelSwitch"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-          viewBox="0 0 16 16"
+      <div class="relative">
+        <div
+          class="flex items-center w-fit gap-2 bg-white hover:bg-blue-300 rounded-full p-2 shadow-2xl cursor-pointer text-black px-4"
+          @click="modelSwitch = !modelSwitch"
         >
-          <path
-            fill="#000"
-            d="M11 8a3 3 0 0 1 1.13 5.78 2.95 2.95 0 0 1-.99.22H5a3.05 3.05 0 0 1-2.2-.96 2.96 2.96 0 0 1-.78-2.4 2.97 2.97 0 0 1 1.99-2.47A3.03 3.03 0 0 1 4.86 8H11Zm0 1.33H5a1.67 1.67 0 0 0-.1 3.33H11a1.68 1.68 0 0 0 1.63-1.29 1.66 1.66 0 0 0-1.05-1.93 1.65 1.65 0 0 0-.47-.1H11ZM5 10a1 1 0 0 1 .7 1.7 1 1 0 0 1-1.33.07 1 1 0 0 1-.25-1.24 1.02 1.02 0 0 1 .5-.45A.98.98 0 0 1 5 10Zm6-8.67a3 3 0 0 1 .14 6H5A2.98 2.98 0 0 1 2.02 4.7a3 3 0 0 1 2.84-3.35H11Zm0 1.34H5A1.67 1.67 0 0 0 4.9 6H11a1.66 1.66 0 0 0 1.34-2.66 1.66 1.66 0 0 0-1.23-.67H11Zm0 .66a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"
-          />
-        </svg>
-        <span class="text-sm font-black hidden md:block text-nowrap"
-          >模型切换</span
-        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="none"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill="#000"
+              d="M11 8a3 3 0 0 1 1.13 5.78 2.95 2.95 0 0 1-.99.22H5a3.05 3.05 0 0 1-2.2-.96 2.96 2.96 0 0 1-.78-2.4 2.97 2.97 0 0 1 1.99-2.47A3.03 3.03 0 0 1 4.86 8H11Zm0 1.33H5a1.67 1.67 0 0 0-.1 3.33H11a1.68 1.68 0 0 0 1.63-1.29 1.66 1.66 0 0 0-1.05-1.93 1.65 1.65 0 0 0-.47-.1H11ZM5 10a1 1 0 0 1 .7 1.7 1 1 0 0 1-1.33.07 1 1 0 0 1-.25-1.24 1.02 1.02 0 0 1 .5-.45A.98.98 0 0 1 5 10Zm6-8.67a3 3 0 0 1 .14 6H5A2.98 2.98 0 0 1 2.02 4.7a3 3 0 0 1 2.84-3.35H11Zm0 1.34H5A1.67 1.67 0 0 0 4.9 6H11a1.66 1.66 0 0 0 1.34-2.66 1.66 1.66 0 0 0-1.23-.67H11Zm0 .66a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"
+            />
+          </svg>
+          <span class="text-sm font-black hidden md:block text-nowrap"
+            >模型切换</span
+          >
+        </div>
+        <ModelSwicth v-if="modelSwitch" />
       </div>
       <!-- Command -->
       <div
@@ -140,11 +148,11 @@ let modelSetting = ref(false);
     </div>
 
     <div
-      class="w-full my-2 min-h-20 rounded-xl text-white border-2 border-white border-solid bg-gray-800 overflow-hidden relative"
+      class="w-full my-2 min-h-20 rounded-xl text-white border-2 border-gray-700 border-solid bg-gray-800 overflow-hidden relative"
     >
       <!-- Textarea -->
       <textarea
-        v-model="props.inputContent"
+        v-model="inputContent"
         class="h-full w-full p-2 outline-0 resize-none no-scrollbar"
         placeholder="Type your message here..."
       ></textarea>
@@ -153,7 +161,7 @@ let modelSetting = ref(false);
       >
         <!-- Attach Button -->
         <div class="flex gap-2 relative text-gray-400" v-if="props.allowAttach">
-          <label for="inputAttach" >
+          <label for="inputAttach">
             <span class="text-sm pr-2 align-bottom">上传附件</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -198,8 +206,5 @@ let modelSetting = ref(false);
   </div>
 
   <!-- Pop -->
-  <ModelSetting 
-    v-if="modelSetting"
-    @close="modelSetting = !modelSetting"
-  />
+  <ModelSetting v-if="modelSetting" @close="modelSetting = !modelSetting" />
 </template>

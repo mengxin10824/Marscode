@@ -1,3 +1,7 @@
+import type { Message } from "./Message";
+import { getNow } from "./Time";
+import { generateUUID } from "./UUID";
+
 // Tab 类型定义
 export class Tab {
     // 标识
@@ -16,11 +20,32 @@ export class Tab {
     // 是否无痕
     isPrivate: boolean = false;
 
-    constructor(id: string, name: string, isActive: boolean, createdTime: string, updatedTime: string) {
+    // 所有消息
+    messages: Array<Message> = [];
+
+    constructor(id: string = generateUUID(), name: string, isActive: boolean, time: string = getNow()) {
         this.id = id;
         this.name = name;
         this.isActive = isActive;
-        this.createdTime = createdTime;
-        this.updatedTime = updatedTime
+        this.createdTime = time;
+        this.updatedTime = time;
+    }
+
+    addMessage(message: Message): void {
+        this.messages.push(message);
+        this.updatedTime = getNow();
+    }
+
+    getMessages(): Array<Message> {
+        return this.messages;
+    }
+
+    clearMessages(): void {
+        this.messages = [];
+        this.updatedTime = getNow();
+    }
+
+    updateTime(): void {
+        this.updatedTime = getNow();
     }
 }

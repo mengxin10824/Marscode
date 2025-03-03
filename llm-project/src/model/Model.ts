@@ -1,3 +1,4 @@
+import { generateUUID } from "./UUID";
 /**
  * 模型 ModelSwitch 中每个模型
  * 
@@ -23,6 +24,7 @@ export class Model {
     //  */
     // apiKey: string;
 
+<<<<<<< HEAD
     // constructor(id: string, name: string, img: string, url: string, apiKey: string) {
     //     this.id = id;
     //     this.name = name;
@@ -36,6 +38,15 @@ export class Model {
         public url: string = import.meta.env.VITE_API_BASE_URL,  // 默认使用环境变量
         public apiKey: string = import.meta.env.VITE_FALLBACK_API_KEY
     ) {}
+=======
+    constructor(id: string = generateUUID(), name: string, img: string, url: string, apiKey: string) {
+        this.id = id;
+        this.name = name;
+        this.img = img;
+        this.url = url;
+        this.apiKey = apiKey;
+    }
+>>>>>>> fixbug-layout
 
     public getFullKey(): string {
         return "Bearer " + this.apiKey;
