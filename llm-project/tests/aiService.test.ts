@@ -23,6 +23,7 @@ class MockModel extends Model {
   }
 }
 
+
 beforeEach(() => {
   setCurrentModel(new MockModel());
 });
@@ -59,7 +60,13 @@ describe('AI Service API', () => {
       ))
     );
 
-    await streamChatCompletion(mockMessages, onData);
+    await streamChatCompletion(
+      mockMessages, 
+      onData,
+      (messageId, content) => {
+        // 处理消息更新的逻辑
+      }
+    );
 
     expect(onData).toHaveBeenNthCalledWith(1, '你好');
   });

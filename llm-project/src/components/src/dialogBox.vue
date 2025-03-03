@@ -56,11 +56,23 @@ const handleSend = async (content: string) => {
   messages.value.push(aiMsg);
 
   try {
-    await streamChatCompletion([userMsg], (chunk) => {
-      handleStreamResponse(chunk, (content) => {
-        aiMsg.updateContent(content); // 更新 aiMsg 的内容
-      });
-    });
+    await streamChatCompletion(
+      [userMsg],
+      (chunk) => {
+        handleStreamResponse(chunk.content, (content) => {
+          aiMsg.updateContent(content); // 更新 aiMsg 的内容
+        });
+      },
+      (messageId, content) => {
+        // 如果需要处理消息更新，可以在这里添加逻辑
+        if (messageId === aiMsg.id) {
+          aiMsg.updateContent(content); // 更新 aiMsg 的内容
+          console.log("更新了消息内容", messageId, content);
+        } else {
+          // 处理其他消息的更新逻辑
+        }
+      }
+    );
   } finally {
     aiMsg.isStreaming = false;
   }

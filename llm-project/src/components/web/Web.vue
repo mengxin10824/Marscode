@@ -135,8 +135,41 @@ onMounted(() => {
       />
 
       <!-- Chat -->
-      <div class="grow w-full text-white md:px-14">
-        <DialogBox :messages="activeMessages" :model="model" :userImg="userImg" />
+      <div
+        class="grow w-full text-white md:px-26 md:py-10 md:gap-5 md:flex md:flex-col"
+        overflow-y-scroll
+        no-scrollbar
+        flex-grow
+      >
+        <!-- <DialogBox :messages="activeMessages" :model="model" :userImg="userImg" /> -->
+        <div v-for="msg in tabList" :key="msg.id">
+          <div
+            v-if="msg.sender === MessageType.USER"
+            class="h-fit flex flex-row-reverse items-start justify-start gap-2"
+          >
+            <img
+              :src="userImg"
+              alt="User"
+              class="size-10 aspect-square rounded-full bg-amber-50"
+            />
+            <div class="rounded-2xl p-2 max-w-[90%] bg-gray-800">
+              <p class="text-pretty break-words">{{ msg.content }}</p>
+            </div>
+          </div>
+          <div
+            v-if="msg.sender === MessageType.BOT"
+            class="h-fit flex items-start justify-start gap-2"
+          >
+            <img
+              :src="model.icon"
+              alt="AI"
+              class="size-10 aspect-square rounded-full bg-amber-50"
+            />
+            <div class="rounded-2xl bg-gray-800 p-2 max-w-[90%]">
+              <p class="text-pretty break-words">{{ msg.content }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
