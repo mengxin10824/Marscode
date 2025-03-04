@@ -95,11 +95,11 @@ function saveSettings() {
   const settings = {
     systemPrompt: systemPrompt.value,
     model: selectedModel.value,
-    maxTokens: maxTokens.value,
-    temperature: temperature.value,
-    topP: topP.value,
-    topK: topK.value,
-    frequency_penalty: frequency_penalty.value,
+    maxTokens: Number(maxTokens.value),
+    temperature: Number(temperature.value),
+    topP: Number(topP.value),
+    topK: Number(topK.value),
+    frequency_penalty: Number(frequency_penalty.value),
   };
 
   const errors = validateSettings(settings);
