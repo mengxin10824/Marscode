@@ -72,6 +72,7 @@ const handleModelSelect = (model: Model) => {
   setCurrentModel(model);
   console.log("模型已切换至:", model.id, model.name, "API URL:", model.url); // 添加日志
 
+  // 更新 modelSettings
   emit("modelChange", model);
 };
 </script>

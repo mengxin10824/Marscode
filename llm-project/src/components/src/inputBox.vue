@@ -147,21 +147,27 @@ const handleSend = async () => {
 const handleSaveSettings = (settings: any) => {
   modelSettings.value = settings;
   // 更新当前模型
-  setCurrentModel(
-    new Model(
-      generateUUID(),
-      settings.model, // 使用保存的模型名称
-      "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png", // 替换为实际图标 URL
-      "https://api.siliconflow.cn/v1", // 替换为实际 API URL
-      import.meta.env.VITE_FALLBACK_API_KEY // 替换为实际 API Key
-    )
-  );
+  // setCurrentModel(
+  //   new Model(
+  //     generateUUID(),
+  //     settings.model, // 使用保存的模型名称
+  //     "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png", // 替换为实际图标 URL
+  //     "https://api.siliconflow.cn/v1", // 替换为实际 API URL
+  //     import.meta.env.VITE_FALLBACK_API_KEY // 替换为实际 API Key
+  //   )
+  // );
+
+  const selectedModelObj = supportedModels.find((m) => m.id === settings.model);
+  if (selectedModelObj) {
+    setCurrentModel(selectedModelObj);
+  }
   console.log("Model settings updated:", settings); // 打印日志
 };
 
 const handleModelChange = (model: Model) => {
   setCurrentModel(model);
   currentModel.value = model;
+  modelSettings.value.model = model.id; // 同步 modelSettings
   console.log("Model changed to:", model.name); // 添加日志
   // 根据模型是否支持附件上传，更新 allowAttach
   const supportsAttach =

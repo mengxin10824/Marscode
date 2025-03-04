@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, defineEmits, defineProps, onMounted } from "vue";
 import { Model } from "../../model/Model";
+import { setCurrentModel } from "../../services/aiService";
 
 const emit = defineEmits(["close", "saveSettings"]);
 
@@ -105,6 +106,12 @@ function saveSettings() {
   if (errors.length > 0) {
     errorMessage.value = errors.join("\n");
     return;
+  }
+
+  // 更新当前模型
+  const selectedModelObj = supportedModels.find((m) => m.id === selectedModel.value);
+  if (selectedModelObj) {
+    setCurrentModel(selectedModelObj);
   }
 
   emit("saveSettings", settings); // 将设置传递给父组件
