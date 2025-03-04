@@ -1,59 +1,16 @@
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-
-const favoriteList = ref<Message[]>([]);
-
-const loadFavorites = () => {
-  const favorites = localStorage.getItem("favorites");
-  if (favorites) {
-    favoriteList.value = JSON.parse(favorites);
-  }
-};
-
-const saveFavorite = (message: Message) => {
-  favoriteList.value.push(message);
-  localStorage.setItem("favorites", JSON.stringify(favoriteList.value));
-};
-
-import { Message, MessageType } from "../../../model/Message";
+import { Message } from "../../../model/Message";
 import SingleFavorite from "./SingleFavorite.vue";
 
-defineEmits<{
-  (event: "close"): void;
-  (event: "select", item: Message): void;
+defineProps<{
+  favorites: Message[];
 }>();
 
-const favorites = ref<Array<Message>>([
-  new Message("default-id", "Hello", MessageType.USER, "default-time", null),
-]);
-
-const getFavoritesFromLocalStorage = () => {
-  const storedFavorites = localStorage.getItem("favorites");
-  return storedFavorites ? JSON.parse(storedFavorites) : [];
-};
-
-const saveFavoritesToLocalStorage = () => {
-  localStorage.setItem("favorites", JSON.stringify(favorites.value));
-};
-
-const handleDelete = (message: Message) => {
-  const index = favorites.value.findIndex((favorite) => favorite.id === message.id);
-  if (index !== -1) {
-    favorites.value.splice(index, 1);
-    saveFavoritesToLocalStorage();
-  }
-};
-
-onMounted(() => {
-  if (favorites.value.length) {
-    favorites.value = getFavoritesFromLocalStorage();
-  }
-});
-
-defineExpose({
-  loadFavorites,
-  saveFavorite,
-});
+defineEmits<{
+  (e: "close"): void;
+  (e: "addFavorite", newFavorite: Message): void;
+  (e: "deleteFavorite", favorite: Message): void;
+}>();
 </script>
 
 <template>
@@ -82,7 +39,7 @@ defineExpose({
           :key="favorite.id"
           :favoriteIndex="index"
           :favorite="favorite"
-          @delete="handleDelete"
+          @delete="$emit('deleteFavorite', favorite)"
         />
       </div>
     </div>
