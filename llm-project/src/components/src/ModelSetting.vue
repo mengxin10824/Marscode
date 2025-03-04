@@ -11,6 +11,7 @@ const topP = ref(0.7);
 const topK = ref(50);
 const frequency_penalty = ref(0.5);
 
+// @ts-ignore
 const modelConfig = computed(() => {
   return new ModelConfig(
     systemPrompt.value,
