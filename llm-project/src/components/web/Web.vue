@@ -296,6 +296,8 @@ function deleteHistory(history: Tab) {
   if (index === -1) return;
 
   histories.value.splice(index, 1);
+
+  deleteTab(history);
 }
 
 function getHistoriesFromLocalStorage() {
@@ -402,7 +404,7 @@ function saveHistoriesToLocalStorage() {
 
           <!-- Hover-Tool -->
           <div
-            class="absolute h-6 bg-gray-700 w-fit top-full mt-1 rounded-2xl py-1 px-2 text-gray-300 gap-2 hidden group-hover:flex z-1"
+            class="absolute h-6 bg-gray-700 w-fit top-full rounded-2xl py-1 px-2 text-gray-300 gap-2 hidden group-hover:flex z-1"
             :class="msg.sender === MessageType.BOT ? 'left-10' : 'right-10'"
           >
             <!-- 删除 -->
