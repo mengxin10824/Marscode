@@ -347,7 +347,7 @@ function saveHistoriesToLocalStorage() {
       <div
         class="grow w-full text-white md:px-26 md:py-10 md:gap-5 md:flex md:flex-col overflow-y-auto h-[calc(100vh-200px)]"
       >
-        <div v-for="msg in activeMessages" :key="msg.id" class="relative group">
+        <div class="relative group" v-for="msg in activeMessages" :key="msg.id">
           <div
             v-if="msg.sender === MessageType.USER"
             class="h-fit flex flex-row-reverse items-start justify-start gap-2"
@@ -355,7 +355,7 @@ function saveHistoriesToLocalStorage() {
             <img
               :src="userImg"
               alt="User"
-              class="size-10 aspect-square rounded-full bg-amber-50"
+              class="size-10 aspect- rounded-full bg-amber-50"
             />
             <div class="rounded-2xl p-2 max-w-[90%] bg-gray-800">
               <p class="text-pretty break-words">{{ msg.content }}</p>

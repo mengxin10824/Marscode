@@ -62,14 +62,17 @@ let isEditing = ref<boolean>(false);
           :historyItem="item"
           :isEditing="isEditing"
           @delete="$emit('deleteHistory', item)"
-          @click="$emit('selectHistory', item); $emit('close');"
+          @click="
+            $emit('selectHistory', item);
+            $emit('close');
+          "
         />
       </div>
     </div>
 
     <div class="flex flex-col gap-4 p-4 items-center">
       <div
-        class="flex items-center p-2 gap-5 w-fit  font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
+        class="flex items-center p-2 gap-5 w-fit font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
         @click="isEditing = !isEditing"
         :class="[isEditing ? 'bg-blue-300' : 'bg-white']"
       >
