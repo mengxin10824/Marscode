@@ -73,9 +73,11 @@ export class AIError extends Error {
     }
 }
 
-export function initAIService(model: Model) {
-    _currentModel = model;
-    _apiBase = model.url;
+// 初始化默认模型
+export function initAIService(defaultModel: Model) {
+    _currentModel = defaultModel;
+    _apiBase = defaultModel.url;
+    console.log("AI服务已初始化，默认模型:", defaultModel.name);
 }
 
 export const getChatCompletion = async (
@@ -83,6 +85,10 @@ export const getChatCompletion = async (
 ): Promise<ChatCompletionResponse> => {
     abortController = new AbortController();
     try {
+        console.log("API 请求 URL:", `${_currentModel.url || import.meta.env.VITE_API_BASE_URL}/chat/completions`);
+        console.log("API 请求头:", {
+            Authorization: _currentModel.apiKey || import.meta.env.VITE_FALLBACK_API_KEY,
+        });
         const response = await axios.post(`${request.apiUrl}/chat/completions`, request, {
             headers: {
                 'Authorization': _currentModel.getFullKey(),
@@ -105,89 +111,96 @@ export const getChatCompletion = async (
 
 export const streamChatCompletion = async (
     messages: Message[],
-    onNewMessage: (message: Message) => void, 
-    onUpdateMessage: (messageId: string, content: string) => void,
-    settings: {
-        systemPrompt?: string;
-        model?: string;
-        maxTokens?: number;
-        temperature?: number;
-        topP?: number;
-        topK?: number;
-        frequency_penalty?: number;
-    } = {}
+    onData: (chunk: Message) => void,
+    onComplete: (messageId: string, content: string) => void,
+    modelSettings: any
 ) => {
-    const response = await fetch(`${_apiBase}/chat/completions`, {
-        method: 'POST',
-        headers: {
-            'Authorization': _currentModel.getFullKey(),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: settings.model || _currentModel.id,
-            messages: messages.map(m => ({ role: 'user', content: m.content })),
-            stream: true,
-            temperature: settings.temperature || 0.7,
-            max_tokens: settings.maxTokens || 2048,
-            top_p: settings.topP || 0.7,
-            top_k: settings.topK || 50,
-            frequency_penalty: settings.frequency_penalty || 0.5,
-        })
-    });
+    console.log("开始API调用，模型设置:", modelSettings);
+    // _currentModel = setCurrentModel(modelSettings.model);
 
-    if (!response.ok) {
-        throw new AIError('API_ERROR', 'Failed to fetch stream response', response.status);
-    }
-
-    if (!response.body) throw new AIError('NO_RESPONSE', 'Empty response body');
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    let messageId: string | null = null; 
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk
-            .split('\n')
-            .filter(line => line.trim() && line.startsWith('data: '));
-
-        lines.forEach((line) => {
-            const data = line.replace("data: ", "").trim();
-            if (data === "[DONE]") {
-                return; // 遇到 [DONE] 标志，直接返回
+    try {
+        const response = await fetch(
+            `${_currentModel.url || import.meta.env.VITE_API_BASE_URL}/chat/completions`,
+            {   
+                method: 'POST',
+                headers: {
+                    Authorization: _currentModel.getFullKey(),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: messages.map((msg) => msg.content).join('\n'),
+                    model: _currentModel.id || modelSettings.model,
+                    messages: messages.map((msg) => ({
+                        role: msg.type === MessageType.USER ? "user" : "assistant",
+                        content: msg.content,
+                    })),
+                    max_tokens: modelSettings.maxTokens,
+                    temperature: modelSettings.temperature,
+                    top_p: modelSettings.topP,
+                    top_k: modelSettings.topK,
+                    frequency_penalty: modelSettings.frequency_penalty,
+                    stream: true
+                })
             }
-            // const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
-            // const content = data.choices[0].delta.content || '';
-            const parsedData = JSON.parse(data) as StreamChunk;
-            const content = parsedData.choices[0].delta.content || "";
+        );
 
-    console.log("API Response（aiService）:", content);
-            if (!messageId) {
-                const newMessage = new Message(
-                    generateUUID(), 
-                    content, 
-                    MessageType.BOT, 
-                    getNow()
-                );
-                messageId = newMessage.id;
-                onNewMessage(newMessage);
-            } else {
-                onUpdateMessage(messageId, content); 
-            }
-        });
+        console.log("API调用成功，响应:", response.body);
+
+        if (response.status !== 200) {
+            throw new AIError('API_ERROR', 'Failed to fetch stream response', response.status);
+        }
+
+        if (!response.body) throw new AIError('NO_RESPONSE', 'Empty response body');
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let messageId: string | null = null; 
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk
+                .split('\n')
+                .filter(line => line.trim() && line.startsWith('data: '));
+
+            lines.forEach((line) => {
+                const data = line.replace("data: ", "").trim();
+                if (data === "[DONE]") {
+                    return; // 遇到 [DONE] 标志，直接返回
+                }
+                // const data = JSON.parse(line.replace('data: ', '')) as StreamChunk;
+                // const content = data.choices[0].delta.content || '';
+                const parsedData = JSON.parse(data) as StreamChunk;
+                const content = parsedData.choices[0].delta.content || "";
+
+        console.log("API Response（aiService）:", content);
+                if (!messageId) {
+                    const newMessage = new Message(
+                        generateUUID(), 
+                        content, 
+                        MessageType.BOT, 
+                        getNow()
+                    );
+                    messageId = newMessage.id;
+                    onData(newMessage);
+                } else {
+                    onComplete(messageId, content); 
+                }
+            });
+        }
+    } catch (error) {
+        console.error("API调用失败:", error);
+        throw error;
     }
-
 }
 
 export const getCurrentModel = () => _currentModel;
-export const setCurrentModel = (model?: Model): Model => {
-  if (model) {
-    _currentModel = model;
-    _apiBase = model.url;
-  }
+export const setCurrentModel = (model: Model): Model => {
+  _currentModel = model;
+  _apiBase = model.url;
+  console.log("当前模型已更新:", model.id, model.name, "API URL:", model.url); // 添加日志
   return _currentModel;
 };
 

@@ -12,8 +12,9 @@ import { generateUUID } from "./UUID";
  */
 
 export enum MessageType {
-    USER = 1,
-    BOT = 2,
+    USER = "USER",
+    BOT = "BOT",
+    SYSTEM = "SYSTEM"
 }
 
 export class Message {
@@ -35,12 +36,15 @@ export class Message {
     isStreaming: boolean = false;
     contentBuffer: string[] = [];
 
+    type: MessageType;
+
     constructor(id: string, content: string, sender: MessageType, sendTime: string, attachMent: Array<File> | null = null) {
         this.id = id;
         this.content = content;
         this.sender = sender;
         this.sendTime = sendTime;
         this.attachMent = attachMent;
+        this.type = sender;
     }
 
     hasAttachments(): boolean {

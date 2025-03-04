@@ -65,7 +65,8 @@ describe('AI Service API', () => {
       onData,
       (messageId, content) => {
         // 处理消息更新的逻辑
-      }
+      },
+      {}
     );
 
     expect(onData).toHaveBeenNthCalledWith(1, '你好');

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, defineEmits, defineProps, onMounted } from "vue";
+import { Model } from "../../model/Model";
 
 const emit = defineEmits(["close", "saveSettings"]);
 
@@ -11,25 +12,83 @@ const props = defineProps({
   },
 });
 
+let supportedModels = [
+  new Model(
+    "deepseek-ai/DeepSeek-V3",
+    "DeepSeek-V3",
+    "https://example.com/deepseek-icon.png", // 替换为实际图标 URL
+    "https://api.siliconflow.cn/v1", // 替换为实际 API URL
+    import.meta.env.VITE_FALLBACK_API_KEY, // 确保使用正确的 API Key
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2.5-72B-Instruct",
+    "Qwen2.5-72B-Instruct",
+    "https://example.com/qwen-icon.png",
+    "https://api.siliconflow.cn/v1",
+    import.meta.env.VITE_FALLBACK_API_KEY,
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2-VL-72B-Instruct",
+    "Qwen2-VL-72B-Instruct",
+    "https://example.com/qwen-vl-icon.png",
+    "https://api.siliconflow.cn/v1",
+    import.meta.env.VITE_FALLBACK_API_KEY,
+    true
+  ),
+  new Model(
+    "THUDM/glm-4-9b-chat",
+    "GLM-4-9B-Chat",
+    "https://example.com/glm-icon.png",
+    "https://api.siliconflow.cn/v1",
+    import.meta.env.VITE_FALLBACK_API_KEY,
+    false
+  ),
+];
+
 // 使用 ref 初始化参数
 const systemPrompt = ref("");
-const selectedModel = ref("gpt-3.5-turbo");
+const selectedModel = ref("Qwen/Qwen2-1.5B-Instruct");
 const temperature = ref(0.7);
 const maxTokens = ref(2048);
 const topP = ref(0.7);
 const topK = ref(50);
 const frequency_penalty = ref(0.5);
+const errorMessage = ref("");
 
 // 在组件挂载时，将传入的当前设置应用到 ref 中
 onMounted(() => {
-  systemPrompt.value = props.currentSettings.systemPrompt || "";
-  selectedModel.value = props.currentSettings.model || "gpt-3.5-turbo";
+  systemPrompt.value = props.currentSettings.systemPrompt || "你是一个乐于助人的AI助手";
+  selectedModel.value = props.currentSettings.model || "Qwen/Qwen2-1.5B-Instruct";
   temperature.value = props.currentSettings.temperature || 0.7;
   maxTokens.value = props.currentSettings.maxTokens || 2048;
   topP.value = props.currentSettings.topP || 0.7;
   topK.value = props.currentSettings.topK || 50;
   frequency_penalty.value = props.currentSettings.frequency_penalty || 0.5;
+  console.log("Initialized model settings:", props.currentSettings); // 添加日志
 });
+
+function validateSettings(settings: any) {
+  const errors = [];
+  // 根据SiliconFlow API要求验证参数
+  if (settings.temperature < 0 || settings.temperature > 2) {
+    errors.push("Temperature 必须在 0 到 2 之间");
+  }
+  if (settings.maxTokens < 1 || settings.maxTokens > 4096) {
+    errors.push("Max Tokens 必须在 1 到 4096 之间");
+  }
+  if (settings.topP < 0 || settings.topP > 1) {
+    errors.push("Top P 必须在 0 到 1 之间");
+  }
+  if (settings.topK < 1 || settings.topK > 100) {
+    errors.push("Top K 必须在 1 到 100 之间");
+  }
+  if (settings.frequency_penalty < 0 || settings.frequency_penalty > 2) {
+    errors.push("Frequency Penalty 必须在 0 到 2 之间");
+  }
+  return errors;
+}
 
 function saveSettings() {
   const settings = {
@@ -41,33 +100,16 @@ function saveSettings() {
     topK: topK.value,
     frequency_penalty: frequency_penalty.value,
   };
+
+  const errors = validateSettings(settings);
+  if (errors.length > 0) {
+    errorMessage.value = errors.join("\n");
+    return;
+  }
+
   emit("saveSettings", settings); // 将设置传递给父组件
   emit("close"); // 关闭设置菜单
 }
-
-let allModels = ref([
-  {
-    id: 1,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-  {
-    id: 2,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-  {
-    id: 3,
-    name: "GPT-3.5 Turbo",
-    url: "https://api.openai.com/v1/engines",
-    model: "gpt-3.5-turbo",
-    apiKey: "Bearer sk-1234567890",
-  },
-]);
 </script>
 
 <template>
@@ -76,6 +118,7 @@ let allModels = ref([
   >
     <div class="w-full max-w-md mx-auto p-6 bg-gray-700 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-white mb-6">模型设置</h2>
+      <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
 
       <div class="space-y-8 text-gray-300">
         <div class="mb-4">
@@ -93,7 +136,11 @@ let allModels = ref([
             v-model="selectedModel"
             class="w-full bg-gray-800 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 selection:text-white"
           >
-            <option v-for="model in allModels" :key="model.id" v-bind:value="model.id">
+            <option
+              v-for="model in supportedModels"
+              :key="model.id"
+              v-bind:value="model.id"
+            >
               {{ model.name }}
             </option>
           </select>

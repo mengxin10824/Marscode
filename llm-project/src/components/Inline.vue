@@ -8,8 +8,8 @@ const model = new Model(
   undefined,
   "Bot",
   "https://example.com/bot-icon.png",
-  "gpt-3.5-turbo",
-  "Bearer sk-1234567890"
+  "Qwen/Qwen2-1.5B-Instruct",
+  import.meta.env.VITE_FALLBACK_API_KEY
 );
 const userImg = "https://example.com/user-icon.png";
 
@@ -81,6 +81,8 @@ let inputContent = ref("");
           icon: '',
           url: '',
           apiKey: '',
+          supportsAttach: false,
+          settings: {},
           getFullKey: () => '',
         }"
         :userImg="''"

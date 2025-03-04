@@ -29,8 +29,11 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const md = new MarkdownIt();
-const formatContent = (content: string) => {
-  return md.render(content);
+const formatContent = (content: string, type: MessageType) => {
+  const renderedContent = md.render(content);
+  return `<div class="message-container ${
+    type === MessageType.USER ? "user" : "bot"
+  }">${renderedContent}</div>`;
 };
 
 const messages = ref<Message[]>([]);
@@ -60,18 +63,15 @@ const handleSend = async (content: string) => {
       [userMsg],
       (chunk) => {
         handleStreamResponse(chunk.content, (content) => {
-          aiMsg.updateContent(content); // 更新 aiMsg 的内容
+          aiMsg.updateContent(content);
         });
       },
       (messageId, content) => {
-        // 如果需要处理消息更新，可以在这里添加逻辑
         if (messageId === aiMsg.id) {
-          aiMsg.updateContent(content); // 更新 aiMsg 的内容
-          console.log("更新了消息内容", messageId, content);
-        } else {
-          // 处理其他消息的更新逻辑
+          aiMsg.updateContent(content);
         }
-      }
+      },
+      props.model.settings
     );
   } finally {
     aiMsg.isStreaming = false;
@@ -141,6 +141,15 @@ nextTick(() => {
 onMounted(() => {
   someFunction();
 });
+
+const renderMessage = (message: Message) => {
+  if (message.type === MessageType.USER) {
+    return `<div class="user-message">${message.content}</div>`;
+  } else if (message.type === MessageType.BOT) {
+    return `<div class="bot-message">${message.content}</div>`;
+  }
+  return `<div class="system-message">${message.content}</div>`;
+};
 </script>
 
 <template>
@@ -234,7 +243,7 @@ struct TodoItem: Identifiable {
       <div v-if="msg.isStreaming" class="typing-indicator">
         <!-- 加载动画 -->
       </div>
-      <div v-html="formatContent(msg.content)"></div>
+      <div v-html="formatContent(msg.content, msg.type)"></div>
     </div>
     <SingleMessage
       :model="model"

@@ -43,8 +43,8 @@ const model = new Model(
   undefined,
   "Bot",
   "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png",
-  "gpt-3.5-turbo",
-  "Bearer sk-1234567890"
+  "Qwen/Qwen2-1.5B-Instruct",
+  import.meta.env.VITE_FALLBACK_API_KEY
 );
 const userImg =
   "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/user.png";
