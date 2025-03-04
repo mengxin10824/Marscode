@@ -9,8 +9,6 @@ import { Tab } from "../../model/Tab";
 import { Message, MessageType } from "../../model/Message";
 import MarkdownIt from "markdown-it";
 
-
-
 // 标签页
 const tabs = ref<Tab[]>([new Tab(undefined, "New Tab", true, undefined)]);
 // 监听标签页变化
@@ -67,7 +65,6 @@ const saveTab = () => {
 const isShowFavorite = ref(false);
 const isShowHistory = ref(false);
 
-
 // 模型和用户信息
 const model = new Model(
   undefined,
@@ -110,6 +107,7 @@ function addNewTab(newTab?: Tab) {
 
   tabs.value.push(newTab);
   activateTab(newTab);
+  addHistory(newTab);
 }
 
 function activateTab(selectedTab: Tab) {
@@ -256,6 +254,57 @@ function getFavoritesFromLocalStorage() {
 
 function saveFavoritesToLocalStorage() {
   localStorage.setItem("favorites", JSON.stringify(favorites.value));
+}
+
+/**
+ * 历史部分
+ */
+
+let histories = ref<Tab[]>([]);
+onMounted(() => {
+  histories.value = getHistoriesFromLocalStorage();
+});
+
+watch(
+  histories,
+  () => {
+    saveHistoriesToLocalStorage();
+  },
+  { deep: true }
+);
+
+function addHistory(newHistory?: Tab) {
+  if (!newHistory) {
+    const newTab = new Tab(undefined, "New Tab", false, undefined);
+    // 创建新历史并激活标签页
+    addHistory(newTab);
+    addNewTab(newTab);
+    return;
+  }
+
+  // 剔除隐私模式
+  if (newHistory.isPrivate) return;
+
+  const existed = histories.value.find((item) => item.id === newHistory.id);
+  if (!existed) {
+    histories.value.push(newHistory);
+  }
+}
+
+function deleteHistory(history: Tab) {
+  const index = histories.value.findIndex((item) => item.id === history.id);
+  if (index === -1) return;
+
+  histories.value.splice(index, 1);
+}
+
+function getHistoriesFromLocalStorage() {
+  const storedHistories = localStorage.getItem("histories");
+  return storedHistories ? JSON.parse(storedHistories) : [];
+}
+
+function saveHistoriesToLocalStorage() {
+  localStorage.setItem("histories", JSON.stringify(histories.value));
 }
 </script>
 <template>
@@ -418,7 +467,14 @@ function saveFavoritesToLocalStorage() {
       @addFavorite="addFavorite"
       @deleteFavorite="deleteFavorite"
     />
-    <History v-if="isShowHistory" @close="isShowHistory = false" />
+    <History
+      v-if="isShowHistory"
+      :histories="histories"
+      @close="isShowHistory = false"
+      @newHistory="addHistory(undefined)"
+      @selectHistory="addNewTab"
+      @deleteHistory="deleteHistory"
+    />
   </div>
 </template>
 

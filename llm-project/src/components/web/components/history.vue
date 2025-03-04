@@ -1,84 +1,21 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
-import { Message } from "../../../model/Message";
+import { ref } from "vue";
 import { Tab } from "../../../model/Tab";
 import SingleHistory from "./SingleHistory.vue";
 
-// 定义事件
-const emit = defineEmits<{
-  (event: "select", item: Message): void;
-  (event: "close"): void;
-  (event: "newTab", newTab: Tab): void;
+defineProps<{
+  histories: Tab[];
 }>();
 
-// 历史记录列表
-const historyList = ref<Message[]>([]);
-const histories = ref<Array<Tab>>([]);
-const isEditing = ref<boolean>(false);
+// 定义事件
+defineEmits<{
+  (event: "close"): void;
+  (event: "newHistory"): void;
+  (event: "selectHistory", item: Tab): void;
+  (event: "deleteHistory", item: Tab): void;
+}>();
 
-// 加载历史记录
-const loadHistory = () => {
-  const history = localStorage.getItem("chatHistory");
-  if (history) {
-    historyList.value = JSON.parse(history);
-  }
-};
-
-// 保存历史记录
-const saveHistory = (message: Message) => {
-  historyList.value.push(message);
-  localStorage.setItem("chatHistory", JSON.stringify(historyList.value));
-};
-
-// 选择历史记录
-const selectHistory = (item: Message) => {
-  emit("select", item);
-};
-
-// 获取本地存储的历史记录
-const getHistoriesFromLocalStorage = () => {
-  const storedHistories = localStorage.getItem("histories");
-  return storedHistories ? JSON.parse(storedHistories) : [];
-};
-
-// 保存历史记录到本地存储
-const saveHistoriesToLocalStorage = (histories: Array<Tab>) => {
-  localStorage.setItem("histories", JSON.stringify(histories));
-};
-
-// 删除历史记录
-const handleDelete = (id: string) => {
-  const index = histories.value.findIndex((tab) => tab.id === id);
-  if (index !== -1) {
-    histories.value.splice(index, 1);
-    saveHistoriesToLocalStorage(histories.value);
-  }
-};
-
-// 切换标签页
-const switchTab = (tab: Tab) => {
-  tab.updateTime();
-  emit("newTab", tab);
-};
-
-// 添加新标签页
-const addNewTab = () => {
-  const newTab = new Tab(undefined, "New Tab", false, undefined);
-  histories.value.push(newTab);
-  switchTab(newTab);
-  saveHistoriesToLocalStorage(histories.value);
-};
-
-onMounted(() => {
-  loadHistory();
-  histories.value = getHistoriesFromLocalStorage();
-});
-
-defineExpose({
-  historyList,
-  saveHistory,
-  loadHistory,
-});
+let isEditing = ref<boolean>(false);
 </script>
 
 <template>
@@ -92,7 +29,11 @@ defineExpose({
       >
         &leftarrow; 收起
       </div>
-      <img src="" alt="" class="size-15 aspect-square rounded-full bg-amber-50" />
+      <img
+        src=""
+        alt=""
+        class="size-15 aspect-square rounded-full bg-amber-50"
+      />
     </div>
 
     <!-- 历史记录列表 -->
@@ -103,7 +44,7 @@ defineExpose({
         <span>所有历史</span>
         <!-- 添加按钮 -->
         <svg
-          @click="addNewTab"
+          @click="$emit('newHistory')"
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -114,65 +55,37 @@ defineExpose({
         </svg>
       </div>
 
-      <!-- 历史记录 -->
-      <div class="history-container">
-        <div
-          v-for="(item, index) in historyList"
-          :key="index"
-          class="history-item"
-          @click="selectHistory(item)"
-        >
-          <div class="history-content">{{ item.content }}</div>
-          <div class="history-time">{{ item.sendTime }}</div>
-        </div>
-        <div class="flex flex-col gap-4 items-center justify-start p-4">
-          <SingleHistory
-            v-for="item in histories"
-            :key="item.updatedTime"
-            :history-item="item"
-            :is-editing="isEditing"
-            @delete="handleDelete(item.id)"
-          />
-        </div>
+      <div class="flex flex-col gap-4 items-center justify-start p-4">
+        <SingleHistory
+          v-for="item in histories"
+          :key="item.updatedTime"
+          :historyItem="item"
+          :isEditing="isEditing"
+          @delete="$emit('deleteHistory', item)"
+          @click="$emit('selectHistory', item); $emit('close');"
+        />
       </div>
+    </div>
 
-      <div class="flex flex-col gap-4 p-4 items-center">
-        <div
-          class="flex items-center p-2 gap-5 w-fit font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
-          @click="isEditing = !isEditing"
-          :class="[isEditing ? 'bg-blue-300' : 'bg-white']"
+    <div class="flex flex-col gap-4 p-4 items-center">
+      <div
+        class="flex items-center p-2 gap-5 w-fit  font-black text-black rounded-xl text-sm hover:bg-blue-300 cursor-pointer"
+        @click="isEditing = !isEditing"
+        :class="[isEditing ? 'bg-blue-300' : 'bg-white']"
+      >
+        <span>{{ isEditing ? "完成编辑" : "历史编辑" }}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="none"
+          viewBox="0 0 16 16"
         >
-          <span>{{ isEditing ? "完成编辑" : "历史编辑" }}</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            viewBox="0 0 16 16"
-          >
-            <path
-              fill="currentColor"
-              d="M13.3 8.4a.7.7 0 0 1 0-.8l.8-1a.7.7 0 0 0 .1-.8l-1.3-2.3a.7.7 0 0 0-.7-.3l-1.3.2a.7.7 0 0 1-.8-.4l-.4-1.2a.7.7 0 0 0-.6-.5H6.4a.7.7 0 0 0-.6.5L5.4 3a.7.7 0 0 1-.8.4l-1.3-.2a.7.7 0 0 0-.6.3L1.3 5.8a.7.7 0 0 0 .1.8l.8 1a.7.7 0 0 1 0 .8l-.8 1a.7.7 0 0 0 0 .8l1.3 2.3a.7.7 0 0 0 .7.3l1.2-.2a.7.7 0 0 1 .8.4l.4 1.2a.7.7 0 0 0 .7.5H9a.7.7 0 0 0 .7-.5l.4-1.2a.7.7 0 0 1 .7-.4l1.3.2a.7.7 0 0 0 .7-.3l1.3-2.3a.7.7 0 0 0 0-.8l-1-1Zm-1 1 .5.5-.8 1.5-.8-.1a2 2 0 0 0-2.3 1.3l-.3.7H7l-.2-.7a2 2 0 0 0-2.3-1.4l-.8.2-.9-1.5.5-.6a2 2 0 0 0 0-2.6L2.7 6l.9-1.5.8.2a2 2 0 0 0 2.3-1.4l.2-.7h1.7l.3.7a2 2 0 0 0 2.3 1.4l.8-.2.8 1.5-.5.6a2 2 0 0 0 0 2.6Zm-4.5-4a2.7 2.7 0 1 0 0 5.3 2.7 2.7 0 0 0 0-5.4Zm0 4a1.3 1.3 0 1 1 0 2.7 1.3 1.3 0 0 1 0-2.6Z"
-            />
-          </svg>
-        </div>
-        <div
-          class="flex items-center p-2 gap-5 w-fit bg-white font-black text-black rounded-xl text-sm hover:bg-blue-300"
-        >
-          <span>模型设置</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            viewBox="0 0 16 16"
-          >
-            <path
-              fill="currentColor"
-              d="M13.267 8.44a.667.667 0 0 1 0-.88l.853-.96a.667.667 0 0 0 .08-.78l-1.333-2.307a.667.667 0 0 0-.714-.32l-1.253.254a.667.667 0 0 1-.767-.44l-.406-1.22a.667.667 0 0 0-.634-.454H6.427a.667.667 0 0 0-.667.454l-.373 1.22a.667.667 0 0 1-.767.44l-1.287-.254a.667.667 0 0 0-.666.32L1.333 5.82a.667.667 0 0 0 .067.78l.847.96a.667.667 0 0 1 0 .88L1.4 9.4a.667.667 0 0 0-.067.78l1.334 2.307a.667.667 0 0 0 .713.32l1.253-.254a.667.667 0 0 1 .767.44l.407 1.22a.667.667 0 0 0 .666.454H9.14a.667.667 0 0 0 .633-.454l.407-1.22a.667.667 0 0 1 .767-.44l1.253.254a.667.667 0 0 0 .713-.32l1.334-2.307a.667.667 0 0 0-.08-.78l-.9-.96Zm-.994.893.534.6-.854 1.48-.786-.16a2 2 0 0 0-2.3 1.334l-.254.746H6.907l-.24-.76a2 2 0 0 0-2.3-1.333l-.787.16-.867-1.473.534-.6a2 2 0 0 0 0-2.667l-.534-.6.854-1.467.786.16a2 2 0 0 0 2.3-1.333l.254-.753h1.706l.254.76a2 2 0 0 0 2.3 1.333l.786-.16.854 1.48-.534.6a2 2 0 0 0 0 2.653Zm-4.513-4a2.667 2.667 0 1 0 0 5.334 2.667 2.667 0 0 0 0-5.334Zm0 4a1.333 1.333 0 1 1 0-2.666 1.333 1.333 0 0 1 0 2.666Z"
-            />
-          </svg>
-        </div>
+          <path
+            fill="#000"
+            d="M14.7 13.3v1.4H1.3v-1.4h13.4ZM7 4.5l3 3L5.7 12h-3V9L7 4.5Zm3-2.8 3 3-2.1 2.1-3-3L10 1.7Z"
+          />
+        </svg>
       </div>
     </div>
   </div>
