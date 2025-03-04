@@ -6,9 +6,10 @@ import AllPrompts from "./AllPrompts.vue";
 import { defineProps, defineEmits, ref } from "vue";
 import { Message, MessageType } from "../../model/Message";
 import { Prompt } from "../../model/Prompt";
-import { streamChatCompletion } from "../../services/aiService";
+import { streamChatCompletion, setCurrentModel } from "../../services/aiService";
 import { getNow } from "../../model/Time";
 import { generateUUID } from "../../model/UUID";
+import { Model } from "../../model/Model";
 
 let props = defineProps({
   isToolBar: {
@@ -35,6 +36,7 @@ const emit = defineEmits<{
   (event: "sendMessage", content: Message): void;
   (event: "receiveMessage", content: Message): void;
   (event: "updateMessage", messageId: string, content: string): void;
+  (event: "update:allowAttach", allowAttach: boolean): void;
 }>();
 
 let prompt = ref(false);
@@ -43,6 +45,61 @@ let modelSwitch = ref(false);
 let modelSetting = ref(false);
 
 let inputContent = ref("");
+
+const modelSettings = ref({
+  systemPrompt: "",
+  model: "gpt-3.5-turbo",
+  maxTokens: 2048,
+  temperature: 0.7,
+  topP: 0.7,
+  topK: 50,
+  frequency_penalty: 0.5,
+});
+
+const supportedModels = [
+  new Model(
+    "deepseek-ai/DeepSeek-V3",
+    "DeepSeek-V3",
+    "https://example.com/deepseek-icon.png", // 替换为实际图标 URL
+    "https://api.siliconflow.cn/v1", // 替换为实际 API URL
+    "Bearer sk-1234567890", // 替换为实际 API Key
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2.5-72B-Instruct",
+    "Qwen2.5-72B-Instruct",
+    "https://example.com/qwen-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2-VL-72B-Instruct",
+    "Qwen2-VL-72B-Instruct",
+    "https://example.com/qwen-vl-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    true
+  ),
+  new Model(
+    "THUDM/glm-4-9b-chat",
+    "GLM-4-9B-Chat",
+    "https://example.com/glm-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    false
+  ),
+];
+
+const currentModel = ref(
+  new Model(
+    generateUUID(),
+    "Bot",
+    "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png",
+    "gpt-3.5-turbo",
+    "Bearer sk-1234567890"
+  )
+);
 
 function selectPrompt(prompt: Prompt) {
   inputContent.value = prompt.content + "\n" + inputContent.value;
@@ -75,12 +132,38 @@ const handleSend = async () => {
       (messageId, content) => {
         // 更新消息内容
         emit("updateMessage", messageId, content);
-      }
+      },
+      modelSettings.value // 传递用户设置的参数
     );
     console.log("streamChatCompletion completed.", message);
   } catch (error) {
     console.error("Error sending message:", error);
   }
+};
+
+const handleSaveSettings = (settings: any) => {
+  modelSettings.value = settings;
+  // 更新当前模型
+  setCurrentModel(
+    new Model(
+      generateUUID(),
+      "Bot",
+      "https://cdn.jsdelivr.net/gh/linonetwo/linonetwo.github.io/assets/img/robot.png",
+      settings.model,
+      "Bearer sk-1234567890"
+    )
+  );
+};
+
+const handleModelChange = (model: Model) => {
+  // 更新当前模型
+  setCurrentModel(model);
+  currentModel.value = model; // 更新 currentModel
+
+  // 根据模型是否支持附件上传，更新 allowAttach
+  const supportsAttach =
+    supportedModels.find((m) => m.id === model.id)?.supportsAttach || false;
+  emit("update:allowAttach", supportsAttach);
 };
 </script>
 
@@ -153,7 +236,12 @@ const handleSend = async () => {
           </svg>
           <span class="text-sm font-black hidden md:block text-nowrap">模型切换</span>
         </div>
-        <ModelSwicth v-if="modelSwitch" />
+        <ModelSwicth
+          v-if="modelSwitch"
+          :currentModel="currentModel"
+          :models="supportedModels"
+          @modelChange="handleModelChange"
+        />
       </div>
       <!-- Command -->
       <div
@@ -233,5 +321,10 @@ const handleSend = async () => {
   </div>
 
   <!-- Pop -->
-  <ModelSetting v-if="modelSetting" @close="modelSetting = !modelSetting" />
+  <ModelSetting
+    v-if="modelSetting"
+    @close="modelSetting = !modelSetting"
+    @saveSettings="handleSaveSettings"
+    :currentSettings="modelSettings"
+  />
 </template>

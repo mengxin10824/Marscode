@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { ref, defineEmits } from "vue";
+import { ref, defineEmits, defineProps, onMounted } from "vue";
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "saveSettings"]);
 
+// 定义 props 接收当前模型设置
+const props = defineProps({
+  currentSettings: {
+    type: Object,
+    required: true,
+  },
+});
+
+// 使用 ref 初始化参数
 const systemPrompt = ref("");
 const selectedModel = ref("gpt-3.5-turbo");
 const temperature = ref(0.7);
@@ -11,10 +20,29 @@ const topP = ref(0.7);
 const topK = ref(50);
 const frequency_penalty = ref(0.5);
 
+// 在组件挂载时，将传入的当前设置应用到 ref 中
+onMounted(() => {
+  systemPrompt.value = props.currentSettings.systemPrompt || "";
+  selectedModel.value = props.currentSettings.model || "gpt-3.5-turbo";
+  temperature.value = props.currentSettings.temperature || 0.7;
+  maxTokens.value = props.currentSettings.maxTokens || 2048;
+  topP.value = props.currentSettings.topP || 0.7;
+  topK.value = props.currentSettings.topK || 50;
+  frequency_penalty.value = props.currentSettings.frequency_penalty || 0.5;
+});
+
 function saveSettings() {
-  // Save settings
-  
-  emit("close");
+  const settings = {
+    systemPrompt: systemPrompt.value,
+    model: selectedModel.value,
+    maxTokens: maxTokens.value,
+    temperature: temperature.value,
+    topP: topP.value,
+    topK: topK.value,
+    frequency_penalty: frequency_penalty.value,
+  };
+  emit("saveSettings", settings); // 将设置传递给父组件
+  emit("close"); // 关闭设置菜单
 }
 
 let allModels = ref([
@@ -40,8 +68,6 @@ let allModels = ref([
     apiKey: "Bearer sk-1234567890",
   },
 ]);
-
-
 </script>
 
 <template>
@@ -67,11 +93,7 @@ let allModels = ref([
             v-model="selectedModel"
             class="w-full bg-gray-800 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 selection:text-white"
           >
-            <option
-              v-for="model in allModels"
-              :key="model.id"
-              v-bind:value="model.id"
-            >
+            <option v-for="model in allModels" :key="model.id" v-bind:value="model.id">
               {{ model.name }}
             </option>
           </select>
@@ -84,7 +106,7 @@ let allModels = ref([
             v-model="temperature"
             min="0"
             max="2"
-            step="0.1" 
+            step="0.1"
             class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
           />
         </div>

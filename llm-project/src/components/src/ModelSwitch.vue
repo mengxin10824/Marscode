@@ -2,18 +2,54 @@
 import { defineProps, defineEmits } from "vue";
 import { Model } from "../../model/Model";
 
+// 定义支持的模型列表
+const supportedModels = [
+  new Model(
+    "deepseek-ai/DeepSeek-V3",
+    "DeepSeek-V3",
+    "https://example.com/deepseek-icon.png", // 替换为实际图标 URL
+    "https://api.siliconflow.cn/v1", // 替换为实际 API URL
+    "Bearer sk-1234567890", // 替换为实际 API Key
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2.5-72B-Instruct",
+    "Qwen2.5-72B-Instruct",
+    "https://example.com/qwen-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    false
+  ),
+  new Model(
+    "Qwen/Qwen2-VL-72B-Instruct",
+    "Qwen2-VL-72B-Instruct",
+    "https://example.com/qwen-vl-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    true
+  ),
+  new Model(
+    "THUDM/glm-4-9b-chat",
+    "GLM-4-9B-Chat",
+    "https://example.com/glm-icon.png",
+    "https://api.siliconflow.cn/v1",
+    "Bearer sk-1234567890",
+    false
+  ),
+];
+
 defineProps({
   currentModel: {
     type: Model,
-    require: true,
+    required: true,
   },
   models: {
     type: Array<Model>,
-    require: true,
+    required: true,
   },
 });
 
-const emit = defineEmits(["modelChange"])
+const emit = defineEmits(["modelChange"]);
 
 const handleModelSelect = (model: Model) => {
   emit("modelChange", model);
@@ -26,7 +62,7 @@ const handleModelSelect = (model: Model) => {
     <div class="z-10 w-full mt-2 bg-gray-800 rounded-lg shadow-lg">
       <div class="space-y-1 p-1">
         <button
-          v-for="model in models"
+          v-for="model in supportedModels"
           :key="model.id"
           @click="handleModelSelect(model)"
           class="flex items-center gap-2 w-full px-4 py-2 text-white text-sm hover:bg-gray-700 rounded-xl"

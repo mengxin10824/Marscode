@@ -35,7 +35,8 @@ export class Model {
         public name: string,
         public icon: string,     // 图标路径
         public url: string = import.meta.env.VITE_API_BASE_URL,  // 默认使用环境变量
-        public apiKey: string = import.meta.env.VITE_FALLBACK_API_KEY
+        public apiKey: string = import.meta.env.VITE_FALLBACK_API_KEY,
+        public supportsAttach: boolean = false // 新增属性，表示是否支持附件上传
     ) {}
 
 

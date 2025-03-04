@@ -106,7 +106,16 @@ export const getChatCompletion = async (
 export const streamChatCompletion = async (
     messages: Message[],
     onNewMessage: (message: Message) => void, 
-    onUpdateMessage: (messageId: string, content: string) => void 
+    onUpdateMessage: (messageId: string, content: string) => void,
+    settings: {
+        systemPrompt?: string;
+        model?: string;
+        maxTokens?: number;
+        temperature?: number;
+        topP?: number;
+        topK?: number;
+        frequency_penalty?: number;
+    } = {}
 ) => {
     const response = await fetch(`${_apiBase}/chat/completions`, {
         method: 'POST',
@@ -115,10 +124,14 @@ export const streamChatCompletion = async (
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "deepseek-ai/DeepSeek-V3",
+            model: settings.model || _currentModel.id,
             messages: messages.map(m => ({ role: 'user', content: m.content })),
             stream: true,
-            temperature: 0.7
+            temperature: settings.temperature || 0.7,
+            max_tokens: settings.maxTokens || 2048,
+            top_p: settings.topP || 0.7,
+            top_k: settings.topK || 50,
+            frequency_penalty: settings.frequency_penalty || 0.5,
         })
     });
 
